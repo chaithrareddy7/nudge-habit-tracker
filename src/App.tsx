@@ -5,6 +5,7 @@ import { Activity, ArrowRight, Bell, CalendarDays, Check, CheckCheck, ChevronDow
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { supabase, isSupabaseConfigured } from './lib/supabase.ts'
 import './App.css'
+import './pink.css'
 
 type Habit = { id: string; name: string; icon: string; color: string; streak: number; done: boolean }
 type Task = { id: string; title: string; first: string; due?: string; minutes: number; priority: number; snoozes: number; done: boolean; two?: boolean }
