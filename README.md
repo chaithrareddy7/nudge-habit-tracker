@@ -14,10 +14,10 @@ Requirements: Node.js 20.19+ or 22.12+, npm, and (for synced data/auth) a Supaba
 
 ## Included
 
-- Routes: `/today`, `/habits`, `/tasks`, `/inbox`, `/focus`, `/stats`, `/review`, `/settings`.
-- Responsive sidebar/mobile navigation, warm light/dark themes, PWA manifest and service worker.
+- Routes: `/login`, `/today`, `/habits`, `/tasks`, `/inbox`, `/focus`, `/stats`, `/review`, `/settings`.
+- Responsive sidebar/mobile navigation, blush-pink light theme, PWA manifest and service worker.
 - Local-first quick capture (`N`), task creation, habit/task check-offs, focus timer (`F`), week navigation shortcut (`T`), stats chart, reflections, and settings.
-- Supabase email magic-link and Google sign-in entry points; signup profile trigger and RLS-protected schema are in the migration.
+- Supabase email magic-link sign-in/account creation and Google OAuth, session-aware account settings, and sign-out. The signup profile trigger and RLS-protected schema are in the migration.
 - Example habits and tasks are sample content stored in the browser; app content currently uses local storage for the main habit/task/inbox workflows. Auth can be configured independently. Full multi-device data synchronization, realtime CRUD, push subscription delivery, and scheduled weekly-review notifications require connecting those workflows to Supabase and configuring a notification sender.
 
 ## Scripts
