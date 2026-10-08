@@ -1,0 +1,123 @@
+/* Timer — productive hours tracker. Tokens only (light + dark). */
+
+.timer-layout { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 16px; align-items: start; min-width: 0; }
+.timer-main, .timer-side { display: grid; gap: 16px; min-width: 0; }
+.timer-lists { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; min-width: 0; }
+@media (max-width: 980px) {
+  .timer-layout, .timer-lists { grid-template-columns: minmax(0, 1fr); }
+}
+
+.timer-log-short { display: none; }
+
+/* ---------- idle ---------- */
+.timer-idle { display: grid; gap: 16px; padding: 20px; }
+.timer-idle-title { font-size: clamp(20px, 2.4vw, 26px); line-height: 1.2; }
+.timer-cats { gap: 6px; }
+
+.timer-planned {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  padding: 14px 16px; border-radius: var(--radius);
+  border: 1px dashed var(--line-strong); background: var(--surface-2);
+  transition: background .15s, border-color .15s;
+}
+.timer-planned.is-linked { border-style: solid; border-color: var(--accent); background: var(--accent-soft); }
+.timer-planned b { display: block; font: 700 17px/1.3 var(--font-head); margin: 4px 0 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.timer-planned .row { font-size: 12.5px; }
+.timer-planned-link { font-weight: 600; }
+
+.timer-start {
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  width: 100%; min-height: 56px; padding: 0 24px;
+  border: 0; border-radius: 16px;
+  background: var(--accent); color: var(--accent-ink);
+  font: 700 18px/1 var(--font-head); letter-spacing: -.01em;
+  box-shadow: 0 10px 28px color-mix(in srgb, var(--accent) 32%, transparent);
+  transition: background .15s, transform .12s, box-shadow .15s;
+}
+.timer-start:hover { background: var(--accent-strong); }
+.timer-start:active { transform: translateY(1px) scale(.995); }
+.timer-start-icon { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: color-mix(in srgb, var(--accent-ink) 18%, transparent); }
+
+/* ---------- running ---------- */
+.timer-running { display: grid; gap: 16px; justify-items: center; text-align: center; padding: 20px; }
+.timer-status { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); }
+.timer-status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex: none; animation: timer-pulse 2.4s ease-in-out infinite; }
+.is-paused .timer-status-dot { background: var(--warn); animation: none; }
+@keyframes timer-pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .4; transform: scale(.75); } }
+
+.timer-dial { position: relative; width: min(250px, 70vw); aspect-ratio: 1; max-width: 100%; }
+.timer-dial svg { width: 100%; height: 100%; display: block; transform: rotate(-90deg); overflow: visible; }
+.timer-dial circle { fill: none; }
+.timer-dial-track { stroke: var(--surface-3); stroke-width: 8; }
+.timer-dial-value { stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
+.timer-dial-glow { stroke: var(--accent); stroke-width: 22; opacity: .08; transform-origin: 100px 100px; animation: timer-breathe 5s ease-in-out infinite; }
+.is-paused .timer-dial-glow { animation: none; opacity: 0; }
+.is-paused .timer-dial-value { opacity: .5; }
+@keyframes timer-breathe { 0%, 100% { opacity: .05; transform: scale(.97); } 50% { opacity: .16; transform: scale(1.03); } }
+.timer-dial-center { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 6px; }
+.timer-clock { font: 600 clamp(38px, 11vw, 48px)/1 var(--font-mono); letter-spacing: -.04em; color: var(--ink); }
+.is-paused .timer-clock { color: var(--ink-2); }
+.timer-dial-caption { font-size: 12px; color: var(--ink-3); }
+
+.timer-what { display: grid; gap: 8px; justify-items: center; min-width: 0; max-width: 100%; }
+.timer-what h2 { font: 500 clamp(20px, 3vw, 24px)/1.25 var(--font-display); max-width: 100%; overflow-wrap: anywhere; }
+.timer-what-meta { justify-content: center; gap: 6px; }
+.timer-what-meta a.chip { text-decoration: none; }
+
+.timer-controls { display: flex; gap: 10px; width: min(420px, 100%); }
+.timer-controls .btn { flex: 1; height: 50px; border-radius: 15px; font-size: 15px; }
+
+.timer-progress-grid { display: grid; gap: 14px; width: 100%; padding-top: 16px; border-top: 1px solid var(--line); text-align: left; }
+.timer-progress { display: grid; gap: 8px; font-size: 13px; font-weight: 600; min-width: 0; }
+.timer-progress .row-between { flex-wrap: wrap; gap: 4px 12px; }
+.timer-progress .row { gap: 6px; }
+
+/* ---------- side ---------- */
+.timer-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: start; }
+.timer-stats .stat-value { font-size: 20px; }
+.timer-chart-head { margin: 16px 0 6px; font-size: 12px; }
+.timer-chart { height: 160px; }
+.timer-block { gap: 10px; }
+.timer-block-bar { width: 4px; align-self: stretch; border-radius: 4px; flex: none; }
+.timer-block-body { display: grid; gap: 2px; border: 0; background: none; padding: 0; text-align: left; color: inherit; min-width: 0; }
+.timer-block-body:hover .title { color: var(--accent-strong); }
+
+/* compact one-line empty states */
+.timer-empty { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 12px; min-height: 30px; color: var(--ink-3); font-size: 13px; }
+.timer-empty > span { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+.timer-empty .card-link { padding: 0; }
+.timer-no-sessions .card-head { margin-bottom: 6px; }
+
+/* ---------- sessions ---------- */
+.timer-session { width: 100%; border: 0; border-bottom: 1px solid var(--line); background: none; color: inherit; text-align: left; align-items: flex-start; padding: 12px 4px; border-radius: 0; transition: background .15s; }
+button.timer-session:hover { background: var(--surface-2); }
+.timer-session > .dot, .timer-session > .timer-status-dot { margin-top: 5px; }
+.timer-session-body { display: grid; gap: 2px; min-width: 0; }
+.timer-session-notes { font-size: 12.5px; color: var(--ink-2); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.timer-session-end { display: grid; justify-items: end; gap: 2px; flex: none; }
+.timer-session-end b { font-size: 13.5px; }
+.timer-session-end .stars button { padding: 0; }
+.timer-session.is-live { background: var(--accent-soft); border-radius: var(--radius-sm); border-bottom-color: transparent; padding-inline: 10px; }
+.timer-session.is-live b { font-family: var(--font-mono); font-size: 13px; }
+
+.timer-history { display: grid; gap: 16px; }
+.timer-history-day { display: grid; gap: 2px; }
+.timer-history-head { padding: 6px 4px; border-bottom: 1px solid var(--line-strong); text-decoration: none; color: inherit; font-size: 13px; }
+.timer-history-head:hover b { color: var(--accent-strong); }
+.timer-more { margin-top: 10px; }
+
+@media (max-width: 640px) {
+  .timer-running { padding: 20px 14px; gap: 16px; }
+  .timer-idle { padding: 16px; gap: 14px; }
+  .timer-stats .stat-value { font-size: 18px; }
+  /* One swipeable row of categories keeps Start focus near the top. */
+  .timer-cats { flex-wrap: nowrap; overflow-x: auto; margin: 0 -16px; padding: 2px 16px 4px; scrollbar-width: none; }
+  .timer-cats::-webkit-scrollbar { display: none; }
+  .timer-cats .chip-choice { flex: none; height: 36px; }
+  .timer-log-full { display: none; }
+  .timer-log-short { display: inline; }
+  .timer .page-head { flex-wrap: nowrap; align-items: center; }
+  .timer .page-head .btn, .timer-empty .btn.sm, .timer .input, .timer .select { height: 40px; }
+  .timer .card-head .icon-btn.sm, .timer-block .icon-btn.sm { width: 40px; height: 40px; border-radius: 12px; }
+  .timer-empty .card-link { min-height: 40px; }
+}

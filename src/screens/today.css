@@ -1,0 +1,186 @@
+/* Today — the daily dashboard. Tokens only (light + dark). */
+
+.today-title { font-family: var(--font-display); font-weight: 500; letter-spacing: -.02em; }
+.today .page-head h1 { font-size: clamp(22px, 2.6vw, 28px); }
+.today .page-head { align-items: center; }
+
+/* ---------- hero ---------- */
+.today-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(250px, 320px);
+  gap: 16px;
+  align-items: center;
+  padding: 14px 14px 14px 18px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background:
+    radial-gradient(90% 160% at 0% 0%, color-mix(in srgb, var(--accent-soft) 70%, transparent) 0%, transparent 60%),
+    var(--surface);
+  box-shadow: var(--shadow);
+  min-width: 0;
+}
+.today-hero-main { display: flex; align-items: center; gap: 18px; min-width: 0; }
+.today-hero-text { display: grid; gap: 10px; flex: 1; min-width: 0; }
+
+.today-focus { display: grid; gap: 4px; min-width: 0; }
+.today-focus input {
+  width: 100%; min-width: 0; height: 34px;
+  border: 0; border-bottom: 1px dashed var(--line-strong); border-radius: 0;
+  background: transparent; padding: 0 0 4px;
+  font: 500 19px/1.3 var(--font-display); color: var(--ink);
+  letter-spacing: -.01em; outline: none; transition: border-color .15s;
+  text-overflow: ellipsis;
+}
+.today-focus input::placeholder { color: var(--ink-3); font-style: italic; }
+.today-focus input:focus { border-bottom-color: var(--accent); border-bottom-style: solid; }
+
+.today-ring-label { display: grid; justify-items: center; line-height: 1; }
+.today-ring-label b { font-size: 24px; color: var(--ink); }
+.today-ring-label b small { font-size: 12px; margin-left: 1px; color: var(--ink-2); }
+.today-ring-label span { font-size: 10px; color: var(--ink-3); margin-top: 3px; }
+
+.today-progress { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; min-width: 0; }
+.today-big { font: 700 20px/1.1 var(--font-head); letter-spacing: -.02em; color: var(--ink); }
+.today-big small { font-size: 13px; color: var(--ink-3); font-weight: 600; letter-spacing: 0; }
+.today-progress-msg { color: var(--ink-2); font-size: 13px; }
+
+/* timer panel */
+.today-timer {
+  display: grid; gap: 8px; align-content: start;
+  padding: 12px; border-radius: var(--radius-sm);
+  background: var(--surface-2); border: 1px solid var(--line);
+  min-width: 0;
+}
+.today-timer-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 22px; }
+.today-timer-head .card-link { padding: 0; }
+.today-timer-idle { color: var(--ink-2); font-size: 13px; line-height: 1.4; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.today-planned-now { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 13px; }
+.today-planned-now b { font-weight: 700; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.today-planned-now .muted { margin-left: auto; flex: none; font-size: 12px; }
+.today-timer .btn { height: 40px; min-width: 0; }
+.today-timer .btn.block { overflow: hidden; text-overflow: ellipsis; }
+.today-timer.is-live { background: var(--ink); color: var(--bg); border-color: transparent; }
+.today-timer.is-live .eyebrow { color: color-mix(in srgb, var(--bg) 70%, transparent); gap: 6px; }
+.today-timer.is-live .card-link { color: var(--bg); opacity: .8; }
+.today-live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: today-pulse 2s ease-in-out infinite; }
+.today-timer.is-paused .today-live-dot { animation: none; background: var(--warn); }
+@keyframes today-pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .45; transform: scale(.8); } }
+.today-timer-now { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.today-timer-clock { font: 600 28px/1 var(--font-mono); letter-spacing: -.03em; flex: none; }
+.today-timer.is-paused .today-timer-clock { opacity: .6; }
+.today-timer-what { display: grid; gap: 2px; min-width: 0; }
+.today-timer-what b { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.today-timer-what .row { font-size: 11.5px; opacity: .75; white-space: nowrap; overflow: hidden; }
+.today-timer-actions > .btn { flex: 1; }
+.today-timer.is-live .btn.soft { background: color-mix(in srgb, var(--bg) 14%, transparent); color: var(--bg); }
+
+/* ---------- compact empty line ---------- */
+.today-empty { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 12px; min-height: 30px; color: var(--ink-3); font-size: 13px; }
+.today-empty > span { min-width: 0; }
+.today-empty .card-link { padding: 0; }
+
+/* ---------- grid ---------- */
+.today-grid { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: 16px; align-items: start; min-width: 0; }
+.today-col { display: grid; gap: 16px; align-content: start; min-width: 0; }
+
+@media (max-width: 1180px) {
+  .today-hero { grid-template-columns: minmax(0, 1fr) minmax(230px, 280px); }
+}
+
+/* Mobile: single column ordered hero → getting started → schedule → habits → tasks → … */
+@media (max-width: 760px) {
+  .today-hero { grid-template-columns: minmax(0, 1fr); padding: 14px; gap: 12px; }
+  .today-hero-main { gap: 14px; align-items: flex-start; }
+  .today-grid { grid-template-columns: minmax(0, 1fr); }
+  .today-col { display: contents; }
+  .today-schedule { order: 1; }
+  .today-habits { order: 2; }
+  .today-tasks { order: 3; }
+  .today-reflect { order: 4; }
+  .today-goals { order: 5; }
+  .today-streaks { order: 6; }
+  .today-upcoming { order: 7; }
+  .today-summary { order: 8; }
+}
+@media (max-width: 640px) {
+  /* Comfortable tap targets on touch screens. */
+  .today .card-head .icon-btn.sm { width: 40px; height: 40px; border-radius: 12px; }
+  .today .card-head .card-link, .today-empty .card-link { min-height: 40px; }
+  .today-empty .btn.sm, .today-timer .btn, .today-reflect-line .btn, .today-reflect-line .input { height: 40px; }
+  .today .page-head { flex-wrap: nowrap; }
+  .today .page-head .btn { height: 40px; }
+}
+@media (max-width: 420px) {
+  .today-hero-main > .ring { transform: scale(.85); transform-origin: top left; margin: 0 -14px -14px 0; }
+  .today-plan-btn { width: 40px; padding: 0; }
+  .today-plan-btn span { display: none; }
+}
+
+/* ---------- schedule ---------- */
+.today-schedule-list { display: grid; gap: 6px; }
+.today-slot {
+  display: flex; align-items: stretch; gap: 10px;
+  width: 100%; min-width: 0; text-align: left;
+  padding: 8px 8px 8px 0;
+  border: 0; border-radius: var(--radius-sm);
+  background: transparent; color: inherit;
+  transition: background .15s, opacity .15s;
+}
+button.today-slot:hover, .today-slot:hover { background: var(--surface-2); }
+.today-slot-time { display: grid; align-content: start; width: 48px; flex: none; font-size: 12.5px; font-weight: 700; color: var(--ink-2); padding-left: 6px; }
+.today-slot-time small { font-weight: 500; color: var(--ink-3); font-size: 11px; }
+.today-slot-body {
+  flex: 1; min-width: 0; display: grid; gap: 3px; align-content: start;
+  border: 0; background: none; padding: 0 0 0 10px; text-align: left; color: inherit;
+  border-left: 3px solid var(--line-strong);
+}
+.today-slot.is-focus .today-slot-body { border-left-color: var(--slot-color, var(--accent)); }
+.today-slot.is-event .today-slot-body { border-left-style: dotted; }
+.today-slot.is-break .today-slot-body { border-left-color: var(--line); }
+.today-slot.is-break .title { color: var(--ink-3); font-weight: 500; }
+.today-slot .title { display: flex; align-items: center; gap: 5px; font-weight: 600; font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.today-slot .meta { font-size: 12px; color: var(--ink-3); gap: 5px; min-width: 0; overflow: hidden; white-space: nowrap; }
+.today-slot > .icon-btn, .today-slot > .chip { align-self: center; }
+.today-slot.is-past { opacity: .6; }
+.today-slot.is-now { background: var(--accent-soft); }
+.today-slot.is-now .today-slot-time { color: var(--accent-strong); }
+.today-slot-track { display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: var(--ink-3); margin-top: 2px; }
+.today-slot-bar { position: relative; flex: 1; max-width: 140px; height: 4px; border-radius: 99px; background: var(--surface-3); overflow: hidden; }
+.today-slot-bar i { position: absolute; inset: 0 auto 0 0; border-radius: inherit; transition: width .5s var(--ease); }
+.today-slot-live { flex: none; }
+.today-star { color: var(--warn); flex: none; }
+
+.today-now { display: flex; align-items: center; gap: 8px; padding: 2px 0; font-size: 11px; font-weight: 700; color: var(--accent-strong); }
+.today-now span { width: 48px; padding-left: 6px; flex: none; }
+.today-now i { position: relative; flex: 1; height: 2px; border-radius: 2px; background: var(--accent); }
+.today-now i::before { content: ''; position: absolute; left: -4px; top: -3px; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+
+/* ---------- reflection ---------- */
+.today-reflect.is-nudge { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); background: color-mix(in srgb, var(--accent-soft) 40%, var(--surface)); }
+.today-reflect-title { gap: 7px; }
+.today-reflect.is-nudge .today-reflect-title svg { color: var(--accent-strong); }
+.today-reflect-line { display: flex; gap: 8px; min-width: 0; }
+.today-reflect-line .input { flex: 1; }
+.today-reflect-excerpt { display: block; font: italic 400 15px/1.5 var(--font-display); color: var(--ink-2); text-decoration: none; }
+.today-saved { font-size: 12px; color: var(--good); font-weight: 600; }
+
+/* ---------- summary ---------- */
+.today-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: start; }
+.today-stats .stat-value { font-size: 20px; }
+.today-best { font-size: 15px; overflow: hidden; }
+.today-pvr { display: grid; gap: 10px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+
+/* ---------- goals / upcoming ---------- */
+.today-goal-list { display: grid; gap: 4px; }
+.today-upcoming-list { display: grid; gap: 10px; }
+.today-upcoming-day { display: flex; gap: 12px; align-items: flex-start; min-width: 0; }
+.today-upcoming-date {
+  display: grid; justify-items: center; width: 44px; flex: none; padding: 6px 0;
+  border-radius: 12px; background: var(--surface-2); text-decoration: none; color: var(--ink);
+}
+.today-upcoming-date b { font-size: 20px; line-height: 1; }
+.today-upcoming-date span { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); margin-top: 2px; }
+.today-upcoming-row { width: 100%; border: 0; border-bottom: 1px solid var(--line); background: none; text-align: left; padding: 6px 2px; color: inherit; }
+.today-upcoming-row .title { display: flex; align-items: center; gap: 5px; }
+.today-upcoming-row:hover .title { color: var(--accent-strong); }
+.today-quiet { font-size: 13px; }
