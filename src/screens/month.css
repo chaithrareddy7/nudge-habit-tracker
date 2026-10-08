@@ -1,0 +1,23 @@
+/* Month planner. Theme tokens only. Header + strip live in planner.css. */
+
+.month-reset { border: 0; background: none; padding: 0; color: var(--ink-3); font-size: 11.5px; font-weight: 600; text-decoration: underline; }
+.month-grid-card { padding: 12px; }
+@media (max-width: 640px) { .month-grid-card { padding: 8px; } }
+
+.month-cats { display: grid; grid-template-columns: minmax(140px, 200px) minmax(0, 1fr); gap: 20px; align-items: center; }
+.month-donut { position: relative; width: 100%; aspect-ratio: 1; max-width: 200px; margin: 0 auto; }
+.month-donut-center { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; pointer-events: none; }
+.month-donut-center b { font: 700 18px/1.1 var(--font-head); color: var(--ink); }
+.month-donut-center span { font-size: 11px; color: var(--ink-3); }
+.month-cat-legend { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; min-width: 0; }
+.month-cat-legend li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+.month-cat-legend li:last-child { border-bottom: 0; }
+.month-cat-legend b { color: var(--ink); font-weight: 700; }
+.month-cat-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+@media (max-width: 480px) { .month-cats { grid-template-columns: minmax(0, 1fr); } .month-donut { max-width: 160px; } }
+
+.month-chart-empty { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--ink-3); padding: 4px 0; }
+
+/* phones: keep the single Review action on the title row */
+.month-page .plan-head-actions { width: auto; }
+@media (max-width: 420px) { .month-page .plan-head-now { display: none; } }

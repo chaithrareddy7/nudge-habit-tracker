@@ -57,22 +57,22 @@ export default function LoginPage() {
     <section className="login-card">
       <Link className="login-brand" to="/today"><span className="brand-mark"><Leaf size={20} fill="currentColor" /></span><span>nudge</span><span className="brand-dot">.</span></Link>
       <div className="login-flower">✿</div>
-      <span className="eyebrow">A SOFTER WAY TO BEGIN</span>
-      <h1>Welcome to your<br />little corner.</h1>
-      <p className="login-intro">Sign in or create an account. We’ll send a quiet little link to your inbox—no password to remember.</p>
-      <button className="google-button login-google" onClick={() => void googleSignIn()} disabled={busy}><span className="google-g">G</span> Continue with Google</button>
+      <span className="eyebrow">YOUR PRODUCTIVITY OS</span>
+      <h1>Plan, track, reflect<br />— all in one place.</h1>
+      <p className="login-intro">Sign in or create an account to sync your goals, planners, sessions and journal across devices. No password needed.</p>
+      <button className="btn login-google" onClick={() => void googleSignIn()} disabled={busy}><span className="google-g">G</span> Continue with Google</button>
       <div className="or-divider"><span>or continue with email</span></div>
       <form onSubmit={sendMagicLink} className="login-form">
         <label htmlFor="login-email">Email address</label>
         <input id="login-email" type="email" autoComplete="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" />
-        <button className="primary-button login-submit" type="submit" disabled={busy || !email.trim()}>{busy ? 'Sending your link…' : 'Email me a sign-in link'} <ArrowRight size={15} /></button>
+        <button className="btn primary login-submit" type="submit" disabled={busy || !email.trim()}>{busy ? 'Sending your link…' : 'Email me a sign-in link'} <ArrowRight size={15} /></button>
       </form>
       {message && <p className="login-success" role="status"><Check size={16} />{message}</p>}
       {error && <p className="login-error" role="alert">{error}</p>}
-      <p className="login-privacy"><ShieldCheck size={14} /> Your account and routines stay yours.</p>
+      <p className="login-privacy"><ShieldCheck size={14} /> Your data is private to your account.</p>
       {!isSupabaseConfigured && <p className="login-config-hint">Sign-in needs the Supabase values from .env.example. Local use is still available below.</p>}
       <button className="local-continue" onClick={() => navigate('/today')}>Continue without signing in <ArrowRight size={14} /></button>
     </section>
-    <p className="login-footer">Small steps count. So does taking a breath.</p>
+    <p className="login-footer">Plan → Track → Reflect → Improve</p>
   </main>
 }

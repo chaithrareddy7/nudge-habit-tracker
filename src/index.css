@@ -1,5 +1,2 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
-@import "tailwindcss";
-:root{font-family:'DM Sans',sans-serif;color:#503d47;background:#fff6fa;font-synthesis:none;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased;--bg:#fff6fa;--card:#fff;--text:#503d47;--muted:#9d8792;--line:#f0dfe7;--sage:#c76588;--sage-dark:#b44f74;--sage-bg:#ffedf3;--peach:#d78a78;--shadow:0 6px 24px rgba(145,77,102,.07);color-scheme:light}
-:root.dark{color-scheme:light;--bg:#fff6fa;--card:#fff;--text:#503d47;--muted:#9d8792;--line:#f0dfe7;--sage:#c76588;--sage-dark:#b44f74;--sage-bg:#ffedf3;--peach:#d78a78;background:var(--bg);color:var(--text)}
-*{box-sizing:border-box}html{min-width:320px;background:var(--bg)}body{margin:0;min-width:320px;min-height:100vh;background:var(--bg)}#root{width:100%;max-width:none;min-height:100vh;margin:0;text-align:left;border:0;display:block;box-sizing:border-box}button,input,textarea{font:inherit}button{color:inherit;cursor:pointer}button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #e6a4ba;outline-offset:2px}::selection{background:#f9dce7;color:#503d47}
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Manrope:wght@500;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=JetBrains+Mono:wght@500;600;700&display=swap');
+@import "./styles/theme.css";

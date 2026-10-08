@@ -1,0 +1,9 @@
+.settings-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.settings-grid .span-2 { grid-column: 1 / -1; }
+.reminder-row { flex-wrap: wrap; }
+.reminder-title { flex: 1; min-width: 160px; }
+.reminder-time { width: 120px; }
+.reminder-days { gap: 4px; }
+.reminder-days .chip-choice { width: 30px; justify-content: center; padding: 0; }
+@media (max-width: 860px) { .settings-grid { grid-template-columns: minmax(0, 1fr); } }
+.settings-import { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; padding: 10px 12px; border-radius: 12px; background: var(--warn-soft); color: var(--ink); font-size: 13px; }
