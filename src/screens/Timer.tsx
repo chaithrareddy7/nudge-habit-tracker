@@ -74,13 +74,14 @@ function Idle({ today }: { today: DateKey }) {
   const [linkPlanned, setLinkPlanned] = useState(true)
   const goal = goalById(ws, goalId)
 
-  const start = () => startTimer({
+  const start = (goalSeconds?: number) => startTimer({
     category,
     goal_id: goalId,
     goal_part_id: partId,
-    label: label.trim() || undefined,
+    label: label.trim() || (goalSeconds ? 'Just 5 minutes' : undefined),
     // Explicit link (or explicit opt-out) to the block planned right now.
     block_id: planned && linkPlanned ? planned.id : null,
+    goal_seconds: goalSeconds ?? null,
   })
 
   const applyPlanned = (b: TimeBlock) => { setCategory(b.category); setGoalId(b.goal_id); setPartId(null); setLinkPlanned(true) }
@@ -131,9 +132,13 @@ function Idle({ today }: { today: DateKey }) {
         </Field>
       </div>
 
-      <button type="button" className="timer-start" onClick={start}>
+      <button type="button" className="timer-start" onClick={() => start()}>
         <span className="timer-start-icon" aria-hidden><Play size={22} fill="currentColor" /></span>
         <span>Start focus</span>
+      </button>
+      <button type="button" className="timer-tiny" onClick={() => start(300)}>
+        <b>Stuck? Just 5 minutes</b>
+        <span>Commit to five minutes only. When they’re up, keep going or stop — both count.</span>
       </button>
     </Card>
   )

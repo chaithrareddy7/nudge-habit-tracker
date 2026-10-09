@@ -16,7 +16,7 @@ export const routes = {
   habit: (id: string) => `/habits/${id}`,
   tasks: '/tasks',
   journal: (date?: DateKey) => (date ? `/journal?date=${date}` : '/journal'),
-  analytics: (tab?: 'today' | 'week' | 'month' | 'all', date?: DateKey) => (tab ? `/analytics?tab=${tab}${date ? `&date=${date}` : ''}` : '/analytics'),
+  analytics: (tab?: 'progress' | 'today' | 'week' | 'month' | 'all', date?: DateKey) => (tab ? `/analytics?tab=${tab}${date ? `&date=${date}` : ''}` : '/analytics'),
   insights: '/insights',
   search: (q?: string) => (q ? `/search?q=${encodeURIComponent(q)}` : '/search'),
   settings: '/settings',

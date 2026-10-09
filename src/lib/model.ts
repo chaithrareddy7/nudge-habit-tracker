@@ -111,6 +111,8 @@ export type ActiveTimer = {
   started_at: string // ISO, first start
   accumulated_seconds: number // time banked before the latest resume
   resumed_at: string | null // ISO; null while paused
+  goal_seconds?: number | null // optional mini-goal, e.g. 300 for "Just 5 minutes"
+  goal_reached?: boolean // set once the mini-goal nudge has been shown
 }
 
 export type HabitFrequency =
@@ -196,6 +198,12 @@ export type Reminder = {
   enabled: boolean
 }
 
+/** Today dashboard arrangement: card ids per column, kept separately for 1, 2 and 3 columns. */
+export type DashboardLayout = {
+  layouts: Partial<Record<'1' | '2' | '3', string[][]>>
+  hidden: string[]
+}
+
 export type Settings = {
   display_name: string
   onboarded: boolean
@@ -210,6 +218,7 @@ export type Settings = {
   active_timer: ActiveTimer | null
   milestones_seen: Record<string, number> // streak key -> best value celebrated
   checklist_dismissed: boolean // hides the Getting started card on Today
+  dashboard: DashboardLayout | null // null = default arrangement
 }
 
 export type Workspace = {
@@ -261,6 +270,7 @@ export const DEFAULT_SETTINGS: Settings = {
   active_timer: null,
   milestones_seen: {},
   checklist_dismissed: false,
+  dashboard: null,
 }
 
 export const DEFAULT_REMINDERS: Reminder[] = [

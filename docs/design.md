@@ -79,6 +79,7 @@ Radius 10 / 16 / 22 px (small / card / modal). Shadows are very soft (`--shadow`
 | **Toasts** | Bottom centre, short, optional Undo/Open action; "celebrate" variant only for streak milestones |
 | **Live timer** | Floating dock on every screen except Today and Timer; pulsing dot when running |
 | **Collapsible sections** | Day planner side column; state remembered per device |
+| **Customisable dashboard** | Today cards in 1–3 balanced columns; Customize mode shows a drag handle and hide button per card, short previews, a sticky Reset/Done bar, and hidden cards as chips to restore |
 
 ## 6. Data visualisation
 
