@@ -88,10 +88,12 @@ Status: ✅ shipped · 🟡 partial · ⬜ not started
 | Auto-link the session to the planned focus block happening now | ✅ |
 | Store start, end, duration (excluding pauses), category, goal, part, task, block, rating, notes, date, label, source | ✅ |
 | Manual add and edit of sessions; sessions under 60 s are discarded | ✅ |
+| "Just 5 minutes" low-friction start with a 5-minute check-in nudge (procrastination support) | ✅ |
 
 ### 6.3 Analytics, `/analytics`
 | Requirement | Status |
 | --- | --- |
+| Progress tab (default): momentum vs last week, show-up calendar, 8-week trends, starting/procrastination insights, goal progress | ✅ |
 | Today: hours, sessions, average session, goal progress | ✅ |
 | Week: total, daily average, best day, top category, planned vs actual, vs last week | ✅ |
 | Month: total vs target, %, best day, best time of day, top category, average, productive days | ✅ |

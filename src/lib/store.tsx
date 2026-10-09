@@ -69,7 +69,7 @@ export type StopDraft = { timer: ActiveTimer; seconds: number }
 
 export type NewRow<C extends CollectionName> = Omit<RowOf<C>, 'id'> & { id?: string }
 
-export type StartTimerInput = Partial<Omit<ActiveTimer, 'started_at' | 'accumulated_seconds' | 'resumed_at'>>
+export type StartTimerInput = Partial<Omit<ActiveTimer, 'started_at' | 'accumulated_seconds' | 'resumed_at' | 'goal_reached'>>
 
 type StoreValue = {
   ws: Workspace
@@ -376,6 +376,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         started_at: now,
         accumulated_seconds: 0,
         resumed_at: now,
+        goal_seconds: input.goal_seconds ?? null,
+        goal_reached: false,
       },
     })
   }, [updateSettings])

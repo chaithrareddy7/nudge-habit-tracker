@@ -15,10 +15,12 @@ import { Button, Card, DateStepper, Dot, Empty, Page, ProgressBar, Stat, Tabs, u
 import { GoalRow, PlanVsReality } from '../ui/widgets'
 import { BarsChart, HBars, TrendChart, WeekHourHeatmap, type ChartRow } from './charts'
 import { hourLabel, hourWindow, minuteLabel, monthSeries, trendWord, weekdayHourGrid, weekSeries } from './chartUtils'
+import { ProgressView } from './analytics-progress'
 import './analytics.css'
 
-type Tab = 'today' | 'week' | 'month' | 'all'
+type Tab = 'progress' | 'today' | 'week' | 'month' | 'all'
 const TABS: Array<{ value: Tab; label: string }> = [
+  { value: 'progress', label: 'Progress' },
   { value: 'today', label: 'Today' },
   { value: 'week', label: 'This week' },
   { value: 'month', label: 'This month' },
@@ -30,7 +32,7 @@ export default function Analytics() {
   const { ws } = useStore()
   const [params, setParams] = useSearchParams()
   const raw = params.get('tab')
-  const tab: Tab = TABS.some(t => t.value === raw) ? (raw as Tab) : 'week'
+  const tab: Tab = TABS.some(t => t.value === raw) ? (raw as Tab) : 'progress'
   const dateParam = params.get('date')
   const date = isKey(dateParam) ? dateParam : todayKey()
   const fresh = !ws.sessions.length
@@ -43,14 +45,15 @@ export default function Analytics() {
     <Page
       className="an-page"
       eyebrow="Analytics"
-      title="Where your time goes"
-      subtitle="Every number here is built from the sessions you track — day, week, month and all time."
+      title={tab === 'progress' ? 'Your progress' : 'Where your time goes'}
+      subtitle={tab === 'progress' ? 'Every small step counts — see how far you’ve come and what helps you start.' : 'Every number here is built from the sessions you track — day, week, month and all time.'}
     >
       <div className="an-bar">
         <Tabs tabs={TABS} value={tab} onChange={setTab} />
         {stepMode && !fresh && <DateStepper value={date} onChange={setDate} mode={stepMode} />}
       </div>
-      {fresh && <FirstRun tab={tab} />}
+      {tab === 'progress' && <ProgressView />}
+      {fresh && tab !== 'progress' && <FirstRun tab={tab} />}
       {!fresh && tab === 'today' && <DayView date={date} />}
       {!fresh && tab === 'week' && <WeekView date={date} />}
       {!fresh && tab === 'month' && <MonthView date={date} />}
@@ -62,7 +65,7 @@ export default function Analytics() {
 // ---------------------------------------------------------------------------
 // Empty states
 
-const FIRST_RUN: Record<Tab, { title: string; body: string; points: string[] }> = {
+const FIRST_RUN: Record<Exclude<Tab, 'progress'>, { title: string; body: string; points: string[] }> = {
   today: {
     title: 'Your day, once you track it',
     body: 'Start a timer when you begin a focus block, or log time you already spent. Today’s view then fills in automatically.',
@@ -96,7 +99,7 @@ function TrackActions({ date }: { date?: DateKey }) {
 }
 
 /** Brand-new account: one explanation of what this tab will show, and how to get data into it. */
-function FirstRun({ tab }: { tab: Tab }) {
+function FirstRun({ tab }: { tab: Exclude<Tab, 'progress'> }) {
   const c = FIRST_RUN[tab]
   return (
     <section className="card an-first">

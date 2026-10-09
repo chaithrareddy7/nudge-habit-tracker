@@ -48,6 +48,7 @@ const SECTIONS: Section[] = [
       <>Press <b>Start focus</b>, or the ▶ next to a planned block, to start tracking.</>,
       <>Tick habits and tasks as you finish them.</>,
       <>In the evening, pick a mood and write one line in <b>Check in</b>.</>,
+      <>Press <b>Customize</b> to arrange the cards your way: drag them by the handle (or use the arrow keys), hide the ones you don’t need, and press <b>Reset</b> to go back to the default. Your layout is saved and syncs across devices.</>,
     ],
     tip: <>New here? The <b>Getting started</b> card walks you through the first steps and disappears once you’ve done them.</>,
   },
@@ -64,7 +65,7 @@ const SECTIONS: Section[] = [
       <>The timer keeps running while you use other screens; a small live timer floats at the bottom.</>,
       <>Forgot to start it? Use <b>Log time manually</b> to add a past session. Click any session to edit or delete it.</>,
     ],
-    tip: <>Sessions shorter than one minute aren’t saved. The running timer survives page reloads.</>,
+    tip: <>Stuck or putting it off? Press <b>Just 5 min</b> (on Today or the timer). You only commit to five minutes; when they’re up, Nudge checks in, and you can keep going or stop. Both count. Sessions shorter than one minute aren’t saved.</>,
   },
   {
     id: 'planner',
@@ -177,7 +178,7 @@ const SECTIONS: Section[] = [
     icon: BarChart3,
     title: 'Analytics and Insights',
     to: routes.analytics(),
-    what: <><b>Analytics</b> has detailed numbers and charts for today, a week, a month and all time: hours by day and category, planned vs actual, best day and time of day, trends. <b>Insights</b> turns them into plain-language observations, comparisons (this week vs last week, and so on) and suggestions for what to focus on next.</>,
+    what: <><b>Progress</b> (the first Analytics tab) counts every way you showed up (focus time, habits, finished tasks, journal) with a show-up calendar, week-over-week momentum, 8-week trends, when you usually start, how often planned blocks actually start, and goal progress. <b>Analytics</b> also has detailed numbers and charts for today, a week, a month and all time: hours by day and category, planned vs actual, best day and time of day, trends. <b>Insights</b> turns them into plain-language observations, comparisons (this week vs last week, and so on) and suggestions for what to focus on next.</>,
     why: <>They answer “Am I staying consistent?”, “What progress am I making?” and “What should I focus on next?”</>,
     how: [
       <>Use the tabs and arrows to move between periods.</>,

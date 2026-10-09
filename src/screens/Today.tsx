@@ -1,6 +1,6 @@
 import { useState, type CSSProperties, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, CalendarClock, Clock, Coffee, MapPin, MoonStar, Pause, Play, Plus, Square, Star } from 'lucide-react'
+import { ArrowRight, BarChart3, CalendarClock, CalendarDays, Clock, Coffee, Flag, Flame, LayoutDashboard, ListTodo, MapPin, MoonStar, Pause, Play, Plus, Sparkles, Square, Star } from 'lucide-react'
 import { fmt, formatClock, formatDuration, greeting, minToClock, rangeKeys, shiftKey, todayKey } from '../lib/dates'
 import { MOODS, type DateKey, type PlannerEvent, type TimeBlock } from '../lib/model'
 import { routes } from '../lib/routes'
@@ -12,6 +12,7 @@ import { useStore, useTick } from '../lib/store'
 import { useEditors } from '../shell/editors'
 import { Button, Card, Dot, IconButton, Page, Ring, ScalePick, Stat, useSeriesColor } from '../ui/kit'
 import { GettingStarted, GoalRow, HabitChecklist, PlanVsReality, StreakList, TaskChecklist } from '../ui/widgets'
+import { TodayBoard } from './today-board'
 import './today.css'
 
 /** Local text draft that follows the stored value when it changes elsewhere. */
@@ -36,45 +37,59 @@ export default function Today() {
   const focusBlocks = ws.blocks.filter(b => b.date === today && b.kind === 'focus').length
   const hasHabits = habitsForDay(ws, today).length > 0
   const hasTasks = tasksOn(ws, today).length > 0
+  const [editing, setEditing] = useState(false)
 
   return (
     <Page
       className="today"
       eyebrow={fmt(today, 'EEEE · MMMM d')}
       title={<span className="today-title">{greeting(nowDate)}{name ? `, ${name}` : ''}</span>}
-      actions={<Link className="btn today-plan-btn" to={routes.day(today)} aria-label="Plan day"><CalendarClock size={15} /><span>Plan day</span></Link>}
+      actions={<>
+        <Button className={`today-customize ${editing ? 'is-on' : ''}`} variant={editing ? 'soft' : 'ghost'} icon={<LayoutDashboard size={15} />} aria-pressed={editing} onClick={() => setEditing(e => !e)}><span>{editing ? 'Customizing' : 'Customize'}</span></Button>
+        <Link className="btn today-plan-btn" to={routes.day(today)} aria-label="Plan day"><CalendarClock size={15} /><span>Plan day</span></Link>
+      </>}
     >
       <Hero today={today} now={now} minute={minute} />
       <GettingStarted />
 
-      <div className="today-grid">
-        <div className="today-col today-col-main">
-          <Card className="today-schedule" title="Today’s schedule" sub={scheduleSub(focusBlocks, plannedSecondsOn(ws, today))}
-            action={<IconButton size="sm" bordered label="Add time block" onClick={() => open({ kind: 'block', defaults: { date: today } })}><Plus size={15} /></IconButton>}>
-            <Schedule today={today} minute={minute} now={now} />
-          </Card>
-          <Card className="today-tasks" title="Tasks" action={<IconButton size="sm" bordered label="Add task" onClick={() => open({ kind: 'task', defaults: { date: today } })}><Plus size={15} /></IconButton>}>
-            {hasTasks
-              ? <TaskChecklist date={today} />
-              : <EmptyLine text="Nothing on today’s list yet." action={ws.tasks.some(t => !t.date && !t.done)
-                ? <Link className="card-link" to={routes.tasks}>From backlog <ArrowRight size={13} /></Link>
-                : <Button size="sm" variant="soft" onClick={() => open({ kind: 'task', defaults: { date: today } })}>Add task</Button>} />}
-          </Card>
-          <Summary today={today} now={now} />
-        </div>
-
-        <div className="today-col today-col-side">
-          <Card className="today-habits" title="Habits" action={<Link className="card-link" to={routes.habits}>All habits <ArrowRight size={13} /></Link>}>
-            {hasHabits
-              ? <HabitChecklist date={today} />
-              : <EmptyLine text={ws.habits.length ? 'No habits scheduled for today.' : 'No habits yet.'} action={<Button size="sm" variant="soft" onClick={() => open({ kind: 'habit' })}>New habit</Button>} />}
-          </Card>
-          <Reflection today={today} evening={nowDate.getHours() >= 18} />
-          <GoalsCard />
-          <StreaksCard />
-          <Upcoming today={today} />
-        </div>
-      </div>
+      <TodayBoard editing={editing} onDone={() => setEditing(false)} widgets={{
+        schedule: {
+          title: 'Schedule', icon: CalendarClock,
+          node: (
+            <Card className="today-schedule" title="Today’s schedule" sub={scheduleSub(focusBlocks, plannedSecondsOn(ws, today))}
+              action={<IconButton size="sm" bordered label="Add time block" onClick={() => open({ kind: 'block', defaults: { date: today } })}><Plus size={15} /></IconButton>}>
+              <Schedule today={today} minute={minute} now={now} />
+            </Card>
+          ),
+        },
+        tasks: {
+          title: 'Tasks', icon: ListTodo,
+          node: (
+            <Card className="today-tasks" title="Tasks" action={<IconButton size="sm" bordered label="Add task" onClick={() => open({ kind: 'task', defaults: { date: today } })}><Plus size={15} /></IconButton>}>
+              {hasTasks
+                ? <TaskChecklist date={today} />
+                : <EmptyLine text="Nothing on today’s list yet." action={ws.tasks.some(t => !t.date && !t.done)
+                  ? <Link className="card-link" to={routes.tasks}>From backlog <ArrowRight size={13} /></Link>
+                  : <Button size="sm" variant="soft" onClick={() => open({ kind: 'task', defaults: { date: today } })}>Add task</Button>} />}
+            </Card>
+          ),
+        },
+        habits: {
+          title: 'Habits', icon: Flame,
+          node: (
+            <Card className="today-habits" title="Habits" action={<Link className="card-link" to={routes.habits}>All habits <ArrowRight size={13} /></Link>}>
+              {hasHabits
+                ? <HabitChecklist date={today} />
+                : <EmptyLine text={ws.habits.length ? 'No habits scheduled for today.' : 'No habits yet.'} action={<Button size="sm" variant="soft" onClick={() => open({ kind: 'habit' })}>New habit</Button>} />}
+            </Card>
+          ),
+        },
+        checkin: { title: 'Check-in', icon: MoonStar, node: <Reflection today={today} evening={nowDate.getHours() >= 18} /> },
+        goals: { title: 'Active goals', icon: Flag, node: <GoalsCard /> },
+        streaks: { title: 'Streaks', icon: Sparkles, node: <StreaksCard /> },
+        upcoming: { title: 'Coming up', icon: CalendarDays, node: <Upcoming today={today} /> },
+        numbers: { title: 'Today in numbers', icon: BarChart3, node: <Summary today={today} now={now} /> },
+      }} />
     </Page>
   )
 }
@@ -108,6 +123,7 @@ function Hero({ today, now, minute }: { today: DateKey; now: number; minute: num
 
   let message: string
   if (!target) message = 'No daily target — every minute counts.'
+  else if (seconds <= 0 && new Date(now).getHours() >= 12) message = 'Not started yet? That’s okay — try just 5 minutes.'
   else if (seconds <= 0) message = 'One focused session is a good start.'
   else if (remaining > 0) message = `${formatDuration(remaining)} to go`
   else message = 'Target reached — rest counts too.'
@@ -197,9 +213,18 @@ function TimerPanel({ today, now, minute }: { today: DateKey; now: number; minut
       ) : (
         <p className="today-timer-idle">{next ? <>Next up: <b>{next.title || next.category}</b> at {minToClock(next.start_min)}</> : 'Ready when you are.'}</p>
       )}
-      {current
-        ? <Button variant="primary" block icon={<Play size={15} />} onClick={() => startTimer({ block_id: current.id })}>Start “{current.title || current.category}”</Button>
-        : <Button variant="primary" block icon={<Play size={15} />} onClick={() => open({ kind: 'timer' })}>Start focus</Button>}
+      <div className="today-timer-start">
+        {current
+          ? <Button variant="primary" icon={<Play size={15} />} onClick={() => startTimer({ block_id: current.id })}>Start “{current.title || current.category}”</Button>
+          : <Button variant="primary" icon={<Play size={15} />} onClick={() => open({ kind: 'timer' })}>Start focus</Button>}
+        <Button
+          variant="soft"
+          title="Commit to only 5 minutes — you can stop after that"
+          onClick={() => startTimer(current ? { block_id: current.id, goal_seconds: 300 } : { label: 'Just 5 minutes', goal_seconds: 300 })}
+        >
+          Just 5 min
+        </Button>
+      </div>
     </div>
   )
 }

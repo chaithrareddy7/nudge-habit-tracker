@@ -5,13 +5,13 @@ import {
   BarChart3, BookHeart, BookOpen, CalendarDays, CalendarRange, CheckSquare, Cloud, CloudOff, Flag, Flame, Home,
   Leaf, ListTodo, Menu, NotebookPen, Pause, Play, Plus, Search, Settings as SettingsIcon, Sparkles, Square, StickyNote, Timer, X,
 } from 'lucide-react'
-import { formatClock, formatDuration } from '../lib/dates'
+import { formatClock, formatDuration, todayKey } from '../lib/dates'
 import { routes } from '../lib/routes'
 import { activeTimerSeconds, goalById } from '../lib/selectors'
 import { useStore, useTick } from '../lib/store'
 import { Button, Field, IconButton, Modal, Stars, useToast } from '../ui/kit'
 import { CategorySelect, GoalSelect, useEditors } from './editors'
-import { useCelebrations, useReminders } from './background'
+import { useCelebrations, useReminders, useTimerGoal } from './background'
 import { ErrorBoundary } from './ErrorBoundary'
 import { PlannerTabs, rememberPlannerView } from './PlannerTabs'
 import './shell.css'
@@ -67,6 +67,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { open } = useEditors()
   useReminders()
   useCelebrations()
+  useTimerGoal()
 
   // Keyboard shortcuts: N quick add, T timer, / search.
   useEffect(() => {
@@ -236,8 +237,10 @@ function StopDialog() {
   if (!stopDraft) return null
   const tooShort = stopDraft.seconds < 60
   const save = () => {
+    const firstToday = !ws.sessions.some(x => x.date === todayKey())
     const s = finishTimer({ rating, notes: notes.trim(), category, goal_id: goalId })
-    if (s) toast(<>Saved {formatDuration(s.duration_seconds)} of {s.category}{s.goal_id ? ` toward ${goalById(ws, s.goal_id)?.title}` : ''}</>)
+    if (s && firstToday) toast(<>You started today — the hardest part is done. Saved {formatDuration(s.duration_seconds)}.</>, { tone: 'celebrate', ms: 5000 })
+    else if (s) toast(<>Saved {formatDuration(s.duration_seconds)} of {s.category}{s.goal_id ? ` toward ${goalById(ws, s.goal_id)?.title}` : ''}</>)
     else toast('Session under a minute — not saved')
   }
   return (
