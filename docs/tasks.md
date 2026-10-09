@@ -75,6 +75,16 @@ The v1 feature set is built, polished and verified locally. **Nothing since comm
 - ✅ Fixed: "Load sample data" didn't delete old cloud rows
 - ✅ Verified: 29/29 end-to-end checks at laptop and phone sizes; 75 screenshot loads (new/sample, laptop/phone, light/dark) with no errors or horizontal overflow
 
+### 2026-10-10: Progress analytics + procrastination support
+- ✅ Analytics → **Progress** tab (default): this-week momentum vs the same days last week, 26-week show-up calendar (focus, habits, tasks, journal) with runs and strongest weekday, 8-week trends (focus, habits, tasks), "Getting started" (typical first start, blocks started on time/late/not started, average delay, tailored tip), goal progress. Works for brand-new accounts
+- ✅ **Just 5 minutes** starter on Today and Timer (`active_timer.goal_seconds`); a kind nudge at 5:00 with "Stop here"; first session of the day celebrated; afternoon "not started yet" copy
+- ✅ Verified: 7/7 five-minute flow checks, Progress tab at laptop/phone, light/dark, new account and sample data
+
+### 2026-10-10: Customisable Today dashboard
+- ✅ Today cards (schedule, tasks, habits, check-in, goals, streaks, coming up, numbers) in balanced 1/2/3 columns based on available width
+- ✅ Customize mode: drag and drop with mouse and touch (`@dnd-kit`), arrow-key moves (↑↓ within a column, ←→ between columns) with screen-reader announcements, hide/restore, reset; saved per column count in `settings.dashboard` (synced)
+- ✅ Verified: 13 board checks at 1470×700 and tablet width, real touch drag on a 390 px phone, 17/17 routes clean (laptop light with sample data, phone dark with a new account)
+
 ### 2026-10-08: Project docs
 - ✅ `docs/prd.md`, `architecture.md`, `rules.md`, `design.md`, `tasks.md`, `memory.md`
 

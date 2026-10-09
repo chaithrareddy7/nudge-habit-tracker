@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { monthEndKey, minToClock, nowMin, todayKey, weekday } from '../lib/dates'
 import { routes } from '../lib/routes'
-import { allStreaks, habitDoneOn, habitsForDay, STREAK_MILESTONES } from '../lib/selectors'
+import { activeTimerSeconds, allStreaks, habitDoneOn, habitsForDay, STREAK_MILESTONES } from '../lib/selectors'
 import { useStore } from '../lib/store'
 import { useToast } from '../ui/kit'
 
@@ -65,6 +65,27 @@ export function useReminders() {
     const id = window.setInterval(check, 20_000)
     return () => window.clearInterval(id)
   }, [toast, navigate])
+}
+
+// ---------------------------------------------------------------------------
+// "Just 5 minutes": once the mini-goal is reached, a kind nudge — keep going or stop.
+
+export function useTimerGoal() {
+  const { ws, updateSettings, stopTimer } = useStore()
+  const toast = useToast()
+  const t = ws.settings.active_timer
+  const goal = t?.goal_seconds && !t.goal_reached ? t.goal_seconds : 0
+  useEffect(() => {
+    if (!goal || !t) return
+    const check = () => {
+      if (activeTimerSeconds(ws, Date.now()) < goal) return
+      updateSettings({ active_timer: { ...t, goal_reached: true } })
+      toast(`${Math.round(goal / 60)} minutes done — that’s a real start. Keep going, or stop here: both count.`, { tone: 'celebrate', ms: 9000, action: { label: 'Stop here', onClick: stopTimer } })
+    }
+    check()
+    const id = window.setInterval(check, 3000)
+    return () => window.clearInterval(id)
+  }, [goal, t, ws, updateSettings, stopTimer, toast])
 }
 
 // ---------------------------------------------------------------------------

@@ -83,7 +83,7 @@ erDiagram
 
 | Collection (`Workspace` key) | Table | Notes |
 | --- | --- | --- |
-| `settings` | `profiles.settings` (jsonb) | targets, theme, `active_timer`, milestone memory, `checklist_dismissed` |
+| `settings` | `profiles.settings` (jsonb) | targets, theme, `active_timer`, milestone memory, `checklist_dismissed`, `dashboard` (Today layout per column count + hidden cards) |
 | `categories` | `nudge_categories` | 7 built-ins (`cat-*` ids) + custom |
 | `goals` | `nudge_goals` | `horizon`, `target_hours`, `weekly_target_hours`, `parts` (jsonb), `parent_id`, `status` |
 | `tasks` | `nudge_tasks` | `date` null = backlog |
