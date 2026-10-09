@@ -16,7 +16,7 @@ _Last updated: 2026-10-08_
 | GitHub | `https://github.com/chaithrareddy7/nudge-habit-tracker` (branch `main`, last commit `62c59f0`) |
 | Supabase project | ref `jombigwxqzgslqryblai` (URL in `.env.example`; real key only in the git-ignored `.env`) |
 | Active migration | `supabase/migrations/20261001000000_nudge_productivity_os.sql` (applied by the owner) |
-| Hosting target | Vercel (`vercel.json` ready; not deployed yet) |
+| Hosting | Vercel: https://nudge-habit-tracker-three.vercel.app (auto-deploys `main`) |
 | Owner's dev server | usually `http://localhost:5176` (owner's own `vite --host`; don't stop it) |
 | Docs | `README.md` (setup and deploy), `docs/*` (this set), in-app Guide `src/screens/Guide.tsx` |
 
@@ -42,6 +42,7 @@ _Last updated: 2026-10-08_
 ## Gotchas
 
 - **Never** use `toISOString().slice(0, 10)` for a day; use `src/lib/dates.ts`.
+- **Vercel Hobby blocks commits whose git author isn't the owner.** This repo's local git identity is set to `Chaithra C <95174294+chaithrareddy7@users.noreply.github.com>`; commits authored as `chaithrac2026 <chaithra@nerusalem.org>` are rejected ("Git author … must have access to the project").
 - **Another tool edits this repo concurrently** (VS Code, probably Copilot). Run `git status` and check modified times before big edits; treat unexpected changes as possibly the owner's.
 - Tailwind's `.ring` utility used to clash with the kit's `Ring`; Tailwind is no longer imported, so don't re-add `@import "tailwindcss"`.
 - `VITE_*` env vars are baked in at build time; redeploy after changing them.
