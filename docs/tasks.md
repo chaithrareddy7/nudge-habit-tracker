@@ -17,9 +17,9 @@ The v1 feature set is built, polished and verified locally. **Nothing since comm
 
 | # | Task | Status | Notes |
 | --- | --- | --- | --- |
-| 1 | Commit the productivity-OS rebuild on a branch and push to GitHub (`chaithrareddy7/nudge-habit-tracker`) | ⬜ | Decide whether to commit `.archify/` (diagram output) or add it to `.gitignore` |
+| 1 | Commit the productivity-OS rebuild on a branch and push to GitHub (`chaithrareddy7/nudge-habit-tracker`) | ✅ | Decide whether to commit `.archify/` (diagram output) or add it to `.gitignore` |
 | 2 | Apply `supabase/migrations/20261001000000_nudge_productivity_os.sql` to the Supabase project | ✅ | Owner applied it; the app shows "Synced" |
-| 3 | Import the repo in Vercel, set `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`, deploy | ⬜ | Steps in README §9 |
+| 3 | Import the repo in Vercel, set `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`, deploy | ✅ | Live at https://nudge-habit-tracker-three.vercel.app |
 | 4 | Supabase Auth → URL configuration: Site URL + `https://<app>.vercel.app/**` redirect | ⬜ | Otherwise magic links return to localhost |
 | 5 | Post-deploy smoke test: deep-link refresh (`/plan/week`), sign-in, sync, install as PWA on a phone | ⬜ | |
 
