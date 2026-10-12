@@ -56,3 +56,9 @@
 .gs .card-head { flex-wrap: wrap; row-gap: 6px; }
 .gs .card-link { white-space: nowrap; }
 @media (pointer: coarse) { .gs .card-head .icon-btn { width: 40px; height: 40px; } }
+
+.np { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 14px; border-radius: var(--radius); border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line)); background: color-mix(in srgb, var(--accent-soft) 45%, var(--surface)); }
+.np .grow { display: grid; gap: 2px; flex: 1 1 280px; min-width: 0; }
+.np b { font-size: 13.5px; }
+.np span { font-size: 12.5px; color: var(--ink-2); }
+.np-icon { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 12px; background: var(--surface); color: var(--accent); flex: none; }

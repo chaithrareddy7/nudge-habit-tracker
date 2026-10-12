@@ -87,7 +87,8 @@ Rules for anyone (human or AI assistant) changing this codebase. The reasons beh
 2. `npm run lint`: no new warnings. The `only-export-components` warnings on `store.tsx`, `kit.tsx`, `editors.tsx` and `PlannerTabs.tsx` are known and accepted.
 3. Run the app (`npm run dev`) and exercise the change. For UI, check 390 px and 1470×700, light and dark, a new account and sample data (Settings → Load sample data).
 4. No console errors.
-5. Update the in-app Guide, `README.md` and the docs in `docs/` if behaviour changed. Update [tasks.md](tasks.md).
+5. **Every push updates the docs:** `README.md`, the related files in `docs/` (tasks, memory, prd, architecture, design as relevant) and the in-app Guide for user-facing changes. Update [tasks.md](tasks.md).
+6. Notification logic changed? Run `npm run test:notify`.
 
 ## 12. Git
 

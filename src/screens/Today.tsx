@@ -11,7 +11,7 @@ import {
 import { useStore, useTick } from '../lib/store'
 import { useEditors } from '../shell/editors'
 import { Button, Card, Dot, IconButton, Page, Ring, ScalePick, Stat, useSeriesColor } from '../ui/kit'
-import { GettingStarted, GoalRow, HabitChecklist, PlanVsReality, StreakList, TaskChecklist } from '../ui/widgets'
+import { GettingStarted, GoalRow, NotifyPrompt, HabitChecklist, PlanVsReality, StreakList, TaskChecklist } from '../ui/widgets'
 import { TodayBoard } from './today-board'
 import './today.css'
 
@@ -50,6 +50,7 @@ export default function Today() {
       </>}
     >
       <Hero today={today} now={now} minute={minute} />
+      <NotifyPrompt />
       <GettingStarted />
 
       <TodayBoard editing={editing} onDone={() => setEditing(false)} widgets={{

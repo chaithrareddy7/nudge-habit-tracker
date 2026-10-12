@@ -11,7 +11,8 @@ import { activeTimerSeconds, goalById } from '../lib/selectors'
 import { useStore, useTick } from '../lib/store'
 import { Button, Field, IconButton, Modal, Stars, useToast } from '../ui/kit'
 import { CategorySelect, GoalSelect, useEditors } from './editors'
-import { useCelebrations, useReminders, useTimerGoal } from './background'
+import { useCelebrations, useNotificationActions, useReminders, useTimerGoal, useTimerStartFeedback } from './background'
+import { refreshPush } from '../lib/push'
 import { ErrorBoundary } from './ErrorBoundary'
 import { PlannerTabs, rememberPlannerView } from './PlannerTabs'
 import './shell.css'
@@ -68,6 +69,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   useReminders()
   useCelebrations()
   useTimerGoal()
+  useNotificationActions()
+  useTimerStartFeedback()
+  useEffect(() => { if (user) void refreshPush(user.id) }, [user])
 
   // Keyboard shortcuts: N quick add, T timer, / search.
   useEffect(() => {

@@ -54,7 +54,7 @@ export function ProgressView() {
   const today = todayKey()
   const weekStart = weekStartKey(today)
   const elapsed = rangeKeys(weekStart, today).length
-  const heatFrom = shiftKey(weekStart, -25 * 7) // 26 weeks
+  const heatFrom = shiftKey(weekStart, -52 * 7) // 53 weeks, like GitHub
   const acts = activityByDay(ws, heatFrom, today)
   const list = [...acts.values()]
 
@@ -89,7 +89,8 @@ export function ProgressView() {
 // ---------------------------------------------------------------------------
 
 function Momentum({ thisWeek, lastWeek, elapsed }: { thisWeek: ReturnType<typeof sum>; lastWeek: ReturnType<typeof sum>; elapsed: number }) {
-  const { startTimer } = useStore()
+  const { ws, startTimer } = useStore()
+  const running = ws.settings.active_timer
   const tiles = [
     { icon: CalendarCheck2, label: 'Days you showed up', value: `${thisWeek.days} of ${elapsed}`, now: thisWeek.days, before: lastWeek.days },
     { icon: Timer, label: 'Focus time', value: formatDuration(thisWeek.seconds), now: thisWeek.seconds, before: lastWeek.seconds },
@@ -108,14 +109,21 @@ function Momentum({ thisWeek, lastWeek, elapsed }: { thisWeek: ReturnType<typeof
               <b className="tabular">{t.value}</b>
               <span className="pg-tile-sub">
                 {c === null
-                  ? (t.now > 0 ? 'Fresh progress' : '—')
+                  ? (t.now > 0 ? 'Fresh progress' : 'Nothing yet this week')
                   : c > 0 ? <span className="pg-up">▲ {c}% vs last week</span> : c === 0 ? 'Same as last week' : <span className="muted">▼ {Math.abs(c)}% — still counts</span>}
               </span>
             </div>
           )
         })}
       </div>
-      {zero && (
+      {zero && running && (
+        <div className="pg-nudge is-running">
+          <span className="pg-live" aria-hidden />
+          <span><b>You started — that’s the hardest part.</b> {running.label} is running. Today’s square fills when you stop and save.</span>
+          <Link className="btn sm primary" to={routes.timer}>Open timer</Link>
+        </div>
+      )}
+      {zero && !running && (
         <div className="pg-nudge">
           <Sparkles size={16} />
           <span><b>No pressure — start tiny.</b> Five minutes of anything, one habit, or one small task fills today’s square.</span>
@@ -134,7 +142,10 @@ function ShowUpCalendar({ acts, from, current, best, anything }: { acts: DayActi
   const today = todayKey()
   const weeks: DayActivity[][] = []
   for (let i = 0; i < acts.length; i += 7) weeks.push(acts.slice(i, i + 7))
-  const months = weeks.map((w, i) => { const m = fmt(w[0].key, 'MMM'); return i === 0 || m !== fmt(weeks[i - 1][0].key, 'MMM') ? m : '' })
+  // Label a column when a month begins inside it (GitHub-style); drop the first label if the next one would crowd it.
+  const months = weeks.map((w, i) => { const first = w.find(d => d.key.endsWith('-01')); return first ? fmt(first.key, 'MMM') : i === 0 ? fmt(w[0].key, 'MMM') : '' })
+  const next = months.findIndex((m, i) => i > 0 && m)
+  if (next > 0 && next < 3) months[0] = ''
   const active = acts.filter(showedUp).length
   const byWeekday = Array<number>(7).fill(0)
   acts.forEach((d, i) => { if (showedUp(d)) byWeekday[i % 7]++ })
@@ -154,13 +165,13 @@ function ShowUpCalendar({ acts, from, current, best, anything }: { acts: DayActi
         <div className="pg-cal-grid" style={{ gridTemplateColumns: `28px repeat(${weeks.length}, var(--cell))` }}>
           <span />
           {months.map((m, i) => <span key={i} className="pg-cal-month">{m}</span>)}
-          {['Mon', '', 'Wed', '', 'Fri', '', 'Sun'].map((d, r) => (
+          {['Mon', '', 'Wed', '', 'Fri', '', ''].map((d, r) => (
             <div key={r} className="pg-cal-row" style={{ display: 'contents' }}>
               <span className="pg-cal-day">{d}</span>
               {weeks.map((w, c) => {
                 const day = w[r]
                 if (!day) return <span key={c} />
-                if (day.key > today) return <span key={c} className="pg-cell future" aria-hidden />
+                if (day.key > today) return <span key={c} />
                 const lv = level(day)
                 const parts = [day.seconds ? `${formatDuration(day.seconds)} focus` : '', day.habits ? `${day.habits} habit${day.habits === 1 ? '' : 's'}` : '', day.tasks ? `${day.tasks} task${day.tasks === 1 ? '' : 's'}` : '', day.journal ? 'journal' : ''].filter(Boolean)
                 const title = `${fmt(day.key, 'EEE, MMM d')} — ${parts.length ? parts.join(' · ') : 'nothing logged'}`
@@ -170,11 +181,13 @@ function ShowUpCalendar({ acts, from, current, best, anything }: { acts: DayActi
           ))}
         </div>
       </div>
-      <div className="legend pg-cal-legend">
-        <span>Less</span>
-        {[0, 1, 2, 3, 4].map(l => <i key={l} className={`pg-cell l${l}`} title={LEVEL_LABEL[l]} />)}
-        <span>More</span>
-        <span className="muted">· since {fmt(from, 'MMM d')}</span>
+      <div className="pg-cal-legend">
+        <span>Since {fmt(from, 'MMM d, yyyy')}</span>
+        <span className="pg-cal-scale">
+          Less
+          {[0, 1, 2, 3, 4].map(l => <i key={l} className={`pg-cell l${l}`} title={LEVEL_LABEL[l]} />)}
+          More
+        </span>
       </div>
       </div>
       <dl className="pg-cal-stats">

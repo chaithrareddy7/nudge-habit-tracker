@@ -39,6 +39,13 @@ _Last updated: 2026-10-08_
 - Pink is reserved for actions and highlights; surfaces are neutral.
 - Plain CSS + tokens (Tailwind is unused and slated for removal).
 
+## Push notifications
+
+- Server: `supabase/functions/push` (Deno Edge Function, deploy with `--no-verify-jwt`), scheduled by pg_cron via `supabase/push-cron.sql` (every 5 min, `x-push-secret`). Secrets: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `PUSH_SECRET` (+ `VAPID_SUBJECT`). Frontend: `VITE_VAPID_PUBLIC_KEY`.
+- Generated keys live in the git-ignored `.env.push` at the repo root — never commit them.
+- `planner.ts`/`messages.ts` are shared by server and app (imported by `src/lib/notify.ts`); keep them free of Deno/DOM APIs.
+- Service worker is `src/sw.ts` (own `tsconfig.sw.json`; excluded from the app tsconfig).
+
 ## Gotchas
 
 - **Never** use `toISOString().slice(0, 10)` for a day; use `src/lib/dates.ts`.
@@ -65,6 +72,8 @@ npm run dev     # check 390px + 1470×700, light + dark, new account + sample da
 3. Clean-ups: remove Tailwind and unused assets; split the large screen files.
 
 ## Owner preferences
+
+- **Update `README.md` and the related `docs/*` (and the in-app Guide when user-facing) with every change that gets pushed.**
 
 - Wants a polished, responsive, production-ready product; reviews the UI on a ~1470×700 laptop viewport and on a phone.
 - Likes written docs (README, these files) and step-by-step deployment instructions.

@@ -83,11 +83,19 @@ Radius 10 / 16 / 22 px (small / card / modal). Shadows are very soft (`--shadow`
 
 ## 6. Data visualisation
 
-- Choose the form by job: stat tile (one number), bars (per day), lines (trends), horizontal bars (category share), heatmap (weekday × hour, single-hue accent ramp).
+- Choose the form by job: stat tile (one number), bars (per day), lines (trends), horizontal bars (category share), heatmap (weekday × hour, single-hue accent ramp). The show-up calendar follows GitHub's contribution graph: 11px squares, 3px gaps, 2px radius, Mon/Wed/Fri labels, month names where a month begins, Less→More scale bottom-right, and today marked with an inset ring so the spacing stays even.
 - Planned = `--planned`, actual = `--accent`, categories = their colour.
 - Thin bars, 4 px rounded ends, recessive horizontal grid, no axis lines, no dual axes.
 - Tooltip on every chart; legend for ≥ 2 series; "View as table" for accessibility.
 - No data → one-line message, not an empty chart.
+
+## 6b. Notifications
+
+- **Every notification earns its place:** one clear title (emoji + specific subject), one short supportive line, at most two buttons, and the first button is the smallest useful action (**▶ Start 5 min**, **✓ Done**).
+- **Never shame:** "Not started yet? That's okay — try just 5 minutes", never "You're behind".
+- **Respect attention:** quiet hours by default (22:30–07:30), a daily cap per nudge style, conditions re-checked at send time (no habit reminder once it's done), and a tag so a newer nudge replaces an older one.
+- **Variety without randomness:** several wordings per type, chosen per day so it feels fresh but stable.
+- **Settings pattern:** status-first (one line + one button for this device), then style cards, then a toggle list with times inline, then quiet hours and a live preview.
 
 ## 7. Voice and tone
 

@@ -1,0 +1,5 @@
+# Supabase CLI settings used when deploying Edge Functions.
+# The `push` function checks auth itself (cron secret, user token, or signed
+# notification-button token), so the gateway's JWT check is turned off.
+[functions.push]
+verify_jwt = false

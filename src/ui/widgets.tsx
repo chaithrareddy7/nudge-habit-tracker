@@ -1,12 +1,14 @@
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Flame, Minus, Plus, Target } from 'lucide-react'
+import { BellRing, Flame, Minus, Plus, Target } from 'lucide-react'
 import { formatDuration, todayKey } from '../lib/dates'
 import type { DateKey, Goal } from '../lib/model'
 import { routes } from '../lib/routes'
 import { allStreaks, categoryColor, goalProgress, habitAmount, habitDoneOn, habitStreak, habitsForDay, habitWeekCount, nextMilestone, planVsActual, tasksOn, type StreakItem } from '../lib/selectors'
 import { useStore } from '../lib/store'
 import { useEditors } from '../shell/editors'
-import { Button, Dot, Empty, ProgressBar, Tick, useSeriesColor } from './kit'
+import { Button, Dot, Empty, ProgressBar, Tick, useSeriesColor, useToast } from './kit'
+import { enablePush, pushOnThisDevice, pushSupport } from '../lib/push'
 import './widgets.css'
 
 // ---------------------------------------------------------------------------
@@ -217,6 +219,40 @@ export function GettingStarted() {
           </li>
         ))}
       </ol>
+    </section>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// One-time invitation to turn on push, shown on Today (per device).
+
+const PROMPT_KEY = 'nudge-notify-prompt-dismissed'
+
+export function NotifyPrompt() {
+  const { user } = useStore()
+  const toast = useToast()
+  const [hidden, setHidden] = useState(() => { try { return localStorage.getItem(PROMPT_KEY) === '1' } catch { return true } })
+  const [busy, setBusy] = useState(false)
+  if (hidden || !user || pushOnThisDevice() || pushSupport() !== 'ok') return null
+  const dismiss = () => { try { localStorage.setItem(PROMPT_KEY, '1') } catch { /* ignore */ } setHidden(true) }
+  const turnOn = async () => {
+    setBusy(true)
+    const r = await enablePush(user.id)
+    setBusy(false)
+    toast(r.ok ? '🔔 Notifications are on — you can fine-tune them in Settings' : r.message, r.ok ? { tone: 'celebrate' } : undefined)
+    if (r.ok) setHidden(true)
+  }
+  return (
+    <section className="np" aria-label="Turn on notifications">
+      <span className="np-icon" aria-hidden><BellRing size={18} /></span>
+      <div className="grow">
+        <b>Want a nudge when it’s time to start?</b>
+        <span>Morning kickoff, planned blocks and habit check-ins — even when Nudge is closed. Quiet hours included.</span>
+      </div>
+      <div className="row">
+        <Button size="sm" variant="ghost" onClick={dismiss}>Not now</Button>
+        <Button size="sm" variant="primary" onClick={() => void turnOn()} disabled={busy}>{busy ? 'Turning on…' : 'Turn on'}</Button>
+      </div>
     </section>
   )
 }

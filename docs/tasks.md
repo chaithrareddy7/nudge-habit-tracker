@@ -31,7 +31,7 @@ The v1 feature set is built, polished and verified locally. **Nothing since comm
 | 7 | Unit tests for `selectors.ts` (streaks, goal progress, plan vs actual, habit rates) | ⬜ | Pure functions, easy to cover with Vitest |
 | 8 | Remove unused Tailwind (`tailwindcss`, `@tailwindcss/vite`, plugin line) and unused `src/assets/*`, `public/icons.svg` | ⬜ | |
 | 9 | Week board touch drag-and-drop (pointer events instead of HTML5 DnD) | ⬜ | "Move to…" works today |
-| 10 | Web Push reminders while the app is closed (VAPID + Supabase Edge Function scheduler) | ⬜ | PRD §6.12 |
+| 10 | Web Push reminders while the app is closed (VAPID + Supabase Edge Function scheduler) | ✅ code · ⬜ setup | Built; owner must run README §8.5 (migration, deploy function, secrets, cron, `VITE_VAPID_PUBLIC_KEY`) |
 | 11 | Count-based goals ("20 workouts") | ⬜ | Needs `target_count` + habit/session counting |
 | 12 | CI: GitHub Action running `npm ci && npm run build && npm run lint` (+ tests) on pull requests | ⬜ | |
 
@@ -75,8 +75,18 @@ The v1 feature set is built, polished and verified locally. **Nothing since comm
 - ✅ Fixed: "Load sample data" didn't delete old cloud rows
 - ✅ Verified: 29/29 end-to-end checks at laptop and phone sizes; 75 screenshot loads (new/sample, laptop/phone, light/dark) with no errors or horizontal overflow
 
+### 2026-10-12: Push notifications
+- ✅ Shared notification planner (`supabase/functions/push/planner.ts`): morning kickoff, block start + follow-up, "haven't started yet", habit/task reminders, events, streak protection, evening reflection, weekly/monthly review; nudge styles, quiet hours, daily cap, send-once keys — 26 tests (`npm run test:notify`)
+- ✅ `push` Edge Function (Deno): cron tick, test, ✓ Done / snooze buttons via signed tokens; `web-push` verified under Deno (aes128gcm, VAPID, 410 handling)
+- ✅ Migration `20261012000000_nudge_push.sql`; `supabase/push-cron.sql` template; `supabase/config.toml`
+- ✅ Custom service worker (`src/sw.ts`, injectManifest): notifications with icon/badge/buttons, background actions, deep links
+- ✅ Settings → Notifications redesign; Today "turn on notifications" prompt; in-app reminders now use the same planner
+- ✅ Verified: 16/16 browser checks (real push delivery to the service worker, buttons, deep links, settings, in-app reminders), full regression 17/17 routes ×2, dashboard 13/13, Just-5-min 7/7
+- ⬜ Owner setup steps (README §8.5) — needed before push works on the live site
+- ✅ Fixed: starting a timer away from Today/Timer gave almost no feedback (only the small corner timer). Now “Just 5 min” opens the Timer screen; other starts show “Timer running · Open timer” and the dock pulses; the Progress card shows the running state — 11/11 checks
+
 ### 2026-10-10: Progress analytics + procrastination support
-- ✅ Analytics → **Progress** tab (default): this-week momentum vs the same days last week, 26-week show-up calendar (focus, habits, tasks, journal) with runs and strongest weekday, 8-week trends (focus, habits, tasks), "Getting started" (typical first start, blocks started on time/late/not started, average delay, tailored tip), goal progress. Works for brand-new accounts
+- ✅ Analytics → **Progress** tab (default): this-week momentum vs the same days last week, GitHub-style 53-week show-up calendar (focus, habits, tasks, journal) with runs and strongest weekday, 8-week trends (focus, habits, tasks), "Getting started" (typical first start, blocks started on time/late/not started, average delay, tailored tip), goal progress. Works for brand-new accounts
 - ✅ **Just 5 minutes** starter on Today and Timer (`active_timer.goal_seconds`); a kind nudge at 5:00 with "Stop here"; first session of the day celebrated; afternoon "not started yet" copy
 - ✅ Verified: 7/7 five-minute flow checks, Progress tab at laptop/phone, light/dark, new account and sample data
 
@@ -94,7 +104,7 @@ The v1 feature set is built, polished and verified locally. **Nothing since comm
 
 | Issue | Impact | Workaround |
 | --- | --- | --- |
-| Reminders only fire while the app is open | Missed reminders when closed | Keep the installed PWA open; Web Push planned (#10) |
+| Push needs one-time server setup | No notifications while closed until done | README §8.5 |
 | Week board drag doesn't work on touch | Phones | Use the "Move to…" menu |
 | Last-write-wins sync | Simultaneous edits on two devices | Rare for single users |
 | Photos stored inline | Storage cap ~5 MB | Remove old photos; Storage planned (#13) |

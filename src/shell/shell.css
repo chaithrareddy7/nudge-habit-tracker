@@ -86,3 +86,7 @@
 .skip-link { position: fixed; left: 12px; top: -48px; z-index: 200; padding: 8px 12px; border-radius: 10px; background: var(--ink); color: var(--bg); text-decoration: none; font-weight: 600; transition: top .15s; }
 .skip-link:focus { top: 12px; }
 .content:focus { outline: none; }
+
+/* A freshly started timer: pulse the dock so it's noticed. */
+.timer-dock.is-new { animation: dock-pop .9s var(--ease) 2; }
+@keyframes dock-pop { 0%, 100% { transform: none; box-shadow: var(--shadow-lg); } 40% { transform: translateY(-4px) scale(1.04); box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 35%, transparent), var(--shadow-lg); } }

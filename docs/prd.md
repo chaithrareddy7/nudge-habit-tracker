@@ -52,7 +52,6 @@ Primary device: laptop for planning and analytics; phone for Today, the timer an
 - Calendar import/export (Google/Outlook/ICS).
 - Native mobile apps (the PWA covers mobile).
 - AI coaching or automatic scheduling.
-- Push notifications while the app is closed.
 
 ## 5. Product principles
 
@@ -156,9 +155,11 @@ Generated plain-language insights, "What to focus on next", streak milestones, w
 ### 6.12 Reminders
 | Requirement | Status |
 | --- | --- |
-| Habits, tasks, planned blocks (at start), events (10 min before), journal, planning, weekly and monthly review, custom | ✅ while the app is open |
-| Customisable times and days; browser notifications if permitted | ✅ |
-| Delivery while the app is closed (Web Push) | ⬜ |
+| Habits, tasks, planned blocks (at start), events (10 min before), evening reflection, weekly and monthly review, custom | ✅ |
+| Procrastination nudges: morning kickoff, block follow-up if not started, "haven't started yet", streak protection | ✅ |
+| Delivery while the app is closed (Web Push via Supabase Edge Function + pg_cron) | ✅ (requires the one-time setup in README §8.5) |
+| Actionable notifications: ▶ Start 5 min, ✓ Done (habits/tasks, no app needed), ⏰ snooze 15 min | ✅ |
+| Nudge style (Gentle / Balanced / Coach), per-type toggles and times, quiet hours, daily cap, live preview, test | ✅ |
 
 ### 6.13 Quick Add
 Global "+" and `N`: task, habit, goal, event, time block, start timer, past session, journal, note. ✅
@@ -206,7 +207,6 @@ No analytics or telemetry exists yet; see [tasks.md](tasks.md).
 
 ## 10. Open questions and roadmap candidates
 
-- Web Push reminders (needs VAPID keys and a server-side sender, e.g. a Supabase Edge Function).
 - Count-based goals ("20 workouts").
 - Calendar import (ICS / Google).
 - Photo storage in Supabase Storage instead of inline data URLs.

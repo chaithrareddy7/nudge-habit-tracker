@@ -141,7 +141,20 @@ Streak rule: walk units (scheduled days or weeks); the unfinished current unit n
 
 ## 8. Background behaviour (`shell/background.tsx`)
 
-- **Reminders**: a 20 s interval compares `HH:mm` against habit, task, block, event and routine reminders; de-duplicated per day in `localStorage['nudge-reminders-fired']`; shows a toast and, if permitted, a `Notification`.
+- **Reminders (in-app)**: every 20 s the shared notification planner (`supabase/functions/push/planner.ts`, via `src/lib/notify.ts`) is run on a snapshot of today; due items show a toast (and a system notification if the tab is hidden). Skipped when this signed-in device has push on, so nothing arrives twice. Custom reminders always fire in-app. De-duplicated per day in `localStorage['nudge-reminders-fired']`.
+- **Notification buttons**: links such as `/timer?do=start5` and `/today?do=start-block&id=…` start the timer and then tidy the URL (`useNotificationActions`). A `nudge-refresh` message from the service worker (after **✓ Done**) pulls fresh data.
+
+## 8b. Push notifications
+
+| Piece | Where | Role |
+| --- | --- | --- |
+| Planner | `supabase/functions/push/planner.ts` (+ `messages.ts`) | Pure TS shared by server and app: what's due for a day snapshot (prefs, nudge style, quiet hours, daily cap, send-once keys). Tested by `npm run test:notify` |
+| Edge Function | `supabase/functions/push/index.ts` (Deno) | `tick` (pg_cron every 5 min, `x-push-secret`): loads subscriptions + today's data for each user in their timezone, asks the planner, logs the key, sends Web Push (VAPID, `npm:web-push`), deletes 404/410 subscriptions, sends due snoozes. `test` (user JWT). `done`/`snooze` (HMAC-signed token from the notification) |
+| Tables | `nudge_push_subscriptions` (RLS: own rows), `nudge_push_log`, `nudge_push_queue` (service role only) | Devices, send-once log, 15-min snoozes |
+| Service worker | `src/sw.ts` (vite-plugin-pwa `injectManifest`) | Precache + SPA fallback; `push` → `showNotification` (icon, badge, tag/renotify, ≤2 actions); `notificationclick` → server action or open/focus the right URL |
+| Client | `src/lib/push.ts`, `src/screens/settings-notifications.tsx`, `NotifyPrompt` | Support detection (incl. iOS Home Screen requirement), subscribe/unsubscribe (sign-out removes the device), test, preferences in `settings.notify` |
+
+Security: subscriptions are per user under RLS; the function verifies the cron secret, the caller's JWT, or an HMAC token (18 h expiry) for button actions; private keys live only in function secrets.
 - **Celebrations**: on changes to sessions or completions, compares `allStreaks` with `settings.milestones_seen`; toasts milestones and once-per-run personal bests.
 
 ## 9. PWA and deployment
@@ -174,5 +187,5 @@ Streak rule: walk units (scheduled days or weeks); the unfinished current unit n
 
 - Main bundle ~735 kB (≈220 kB gzip); Recharts is in screen chunks.
 - No automated test suite in the repo (end-to-end checks were run ad hoc; see [tasks.md](tasks.md)).
-- Reminders require the app to be open.
+- Push requires sign-in and a supported browser (iOS: Home Screen app); the scheduler's 5-minute cadence means up to ~5 min latency.
 - Large screen files (`DayPlanner.tsx`, `Goals.tsx`, `WeekPlanner.tsx` at 600+ lines) are candidates for splitting.
