@@ -178,7 +178,7 @@ const SECTIONS: Section[] = [
     icon: BarChart3,
     title: 'Analytics and Insights',
     to: routes.analytics(),
-    what: <><b>Progress</b> (the first Analytics tab) counts every way you showed up (focus time, habits, finished tasks, journal) with a show-up calendar, week-over-week momentum, 8-week trends, when you usually start, how often planned blocks actually start, and goal progress. <b>Analytics</b> also has detailed numbers and charts for today, a week, a month and all time: hours by day and category, planned vs actual, best day and time of day, trends. <b>Insights</b> turns them into plain-language observations, comparisons (this week vs last week, and so on) and suggestions for what to focus on next.</>,
+    what: <><b>Progress</b> (the first Analytics tab) counts every way you showed up (focus time, habits, finished tasks, journal) with a year-long show-up calendar (click any square to open that day), week-over-week momentum, 8-week trends, when you usually start, how often planned blocks actually start, and goal progress. <b>Analytics</b> also has detailed numbers and charts for today, a week, a month and all time: hours by day and category, planned vs actual, best day and time of day, trends. <b>Insights</b> turns them into plain-language observations, comparisons (this week vs last week, and so on) and suggestions for what to focus on next.</>,
     why: <>They answer “Am I staying consistent?”, “What progress am I making?” and “What should I focus on next?”</>,
     how: [
       <>Use the tabs and arrows to move between periods.</>,
@@ -208,10 +208,11 @@ const SECTIONS: Section[] = [
     icon: SettingsIcon,
     title: 'Settings, reminders and your data',
     to: routes.settings,
-    what: <>Daily, weekly and monthly targets, the streak minimum, light/dark theme, timeline hours, categories, reminders (journal, planning, weekly and monthly review, custom), browser notifications, and data tools: export a backup, import a backup, load sample data, start fresh.</>,
+    what: <>Daily, weekly and monthly targets, the streak minimum, light/dark theme, timeline hours, categories, <b>Notifications</b> (turn on for this device, nudge style, what to send, quiet hours, preview and a test), your own reminders, and data tools: export a backup, import a backup, load sample data, start fresh.</>,
     why: <>Targets drive every progress bar and streak, so set them to something realistic.</>,
     how: [
-      <>Reminders appear while Nudge is open (as a message and, if allowed, a browser notification).</>,
+      <>Turn on <b>Notifications</b> to get nudges even when Nudge is closed: a morning kickoff, a ping when a planned block starts, a gentle “haven’t started yet” check, habit reminders with <b>✓ Done</b>, streak protection and a reflection prompt. Choose <b>Gentle</b>, <b>Balanced</b> or <b>Coach</b>, set quiet hours, and press <b>Send test</b>.</>,
+      <>On iPhone, add Nudge to your Home Screen first (Share → Add to Home Screen), then turn notifications on from there.</>,
       <>Use <b>Export JSON</b> regularly as a backup; <b>Import backup</b> restores it.</>,
     ],
   },
@@ -247,7 +248,8 @@ const SHORTCUTS = [
 
 const FAQ = [
   { q: 'Where is my data stored?', a: 'In this browser, always. If you’re signed in, it’s also synced to your private account so other devices see it.' },
-  { q: 'Why didn’t my reminder fire?', a: 'Reminders run while Nudge is open (a tab or the installed app). Allow notifications in Settings to see them outside the tab.' },
+  { q: 'Why didn’t my reminder fire?', a: 'Check Settings → Notifications: notifications must be on for this device (and you need to be signed in), the reminder type must be switched on, and it may fall inside your quiet hours or past the daily cap for your nudge style. Notifications can arrive up to 5 minutes after their time.' },
+  { q: 'Can I act on a notification without opening the app?', a: 'Yes — “✓ Done” marks a habit or task done and “⏰ In 15 min” snoozes it, right from the notification. “▶ Start 5 min” opens Nudge with a five-minute timer running.' },
   { q: 'I forgot to start the timer.', a: 'Use Log time manually on the Focus timer, or Quick Add → Log time. Any session can be edited later.' },
   { q: 'My streak shows 0 but I worked today.', a: 'The productivity streak needs your minimum daily time (Settings → Streak minimum). Today not reaching it yet doesn’t break the streak.' },
   { q: 'How do I start over?', a: 'Settings → Data → Start fresh (export a backup first if you might want it back).' },

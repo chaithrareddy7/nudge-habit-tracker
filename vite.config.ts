@@ -7,8 +7,14 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   plugins: [react(), tailwindcss(), VitePWA({
     registerType: 'autoUpdate',
-    includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
-    workbox: { navigateFallback: '/index.html', cleanupOutdatedCaches: true },
+    // Custom service worker (src/sw.ts) so we can handle push notifications.
+    strategies: 'injectManifest',
+    srcDir: 'src',
+    filename: 'sw.ts',
+    injectManifest: { globPatterns: ['**/*.{js,css,html,svg,png,webmanifest}'] },
+    includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'badge-96.png'],
+    // Service worker in `npm run dev` too, so notifications can be tried locally.
+    devOptions: { enabled: true, type: 'module', navigateFallback: 'index.html' },
     manifest: {
       name: 'Nudge — productivity OS', short_name: 'Nudge',
       description: 'Plan, track, reflect, improve.', theme_color: '#f7f5f4',

@@ -1,17 +1,25 @@
 import { useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { monthEndKey, minToClock, nowMin, todayKey, weekday } from '../lib/dates'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { minToClock, nowMin, todayKey, weekday } from '../lib/dates'
+import { due, snapshotFromWorkspace } from '../lib/notify'
+import { pushOnThisDevice, showLocalNotification } from '../lib/push'
 import { routes } from '../lib/routes'
-import { activeTimerSeconds, allStreaks, habitDoneOn, habitsForDay, STREAK_MILESTONES } from '../lib/selectors'
+import { activeTimerSeconds, allStreaks, STREAK_MILESTONES } from '../lib/selectors'
 import { useStore } from '../lib/store'
 import { useToast } from '../ui/kit'
 
 // ---------------------------------------------------------------------------
-// Reminders: checked every 20s while the app is open. Fires an in-app toast
-// and, if allowed, a browser notification. (Background push while the app is
-// closed needs a push service — see README.)
+// In-app reminders: the same planner as the push server (supabase/functions/push),
+// checked every 20s while the app is open. If this device has push turned on,
+// the server sends them instead, so nothing arrives twice.
 
 const FIRED_KEY = 'nudge-reminders-fired'
+
+function firedMap(): Record<string, string> {
+  try { return JSON.parse(localStorage.getItem(FIRED_KEY) || '{}') as Record<string, string> } catch { return {} }
+}
+const firedKeys = (today: string) => Object.entries(firedMap()).filter(([, d]) => d === today).map(([k]) => k)
+const firedCount = (today: string) => firedKeys(today).filter(k => !k.includes(':custom:')).length
 
 function alreadyFired(id: string) {
   try {
@@ -27,44 +35,111 @@ function alreadyFired(id: string) {
 }
 
 export function useReminders() {
-  const { ws } = useStore()
+  const { ws, user } = useStore()
   const toast = useToast()
   const navigate = useNavigate()
   const wsRef = useRef(ws)
-  useEffect(() => { wsRef.current = ws }, [ws])
+  const userRef = useRef(user)
+  useEffect(() => { wsRef.current = ws; userRef.current = user }, [ws, user])
 
   useEffect(() => {
     const check = () => {
       const w = wsRef.current
-      const today = todayKey()
-      const now = minToClock(nowMin())
-      const due: Array<{ id: string; title: string; body: string; to: string }> = []
-      for (const h of habitsForDay(w, today)) if (h.reminder_time === now && !habitDoneOn(w, h, today)) due.push({ id: `habit:${h.id}`, title: `${h.icon} ${h.name}`, body: 'Time for your habit.', to: routes.today })
-      for (const t of w.tasks) if (t.date === today && !t.done && t.reminder_time === now) due.push({ id: `task:${t.id}`, title: t.title, body: 'Task reminder', to: routes.day(today) })
-      for (const b of w.blocks) if (b.date === today && b.reminder && minToClock(b.start_min) === now) due.push({ id: `block:${b.id}`, title: `Planned: ${b.title}`, body: `${minToClock(b.start_min)}–${minToClock(b.end_min)} · start the timer when you begin`, to: routes.timer })
-      for (const e of w.events) if (e.date === today && e.reminder && e.start_min !== null && minToClock(Math.max(0, e.start_min - 10)) === now) due.push({ id: `event:${e.id}`, title: e.title, body: `Starts at ${minToClock(e.start_min)}`, to: routes.day(today) })
-      for (const r of w.reminders) {
-        if (!r.enabled || r.time !== now) continue
-        if (r.kind === 'monthly_review' ? today !== monthEndKey(today) : !r.days.includes(weekday(today))) continue
-        if (r.kind === 'journal' && w.journal.some(j => j.date === today && (j.body || j.went_well))) continue
-        const to = r.kind === 'journal' ? routes.journal(today) : r.kind === 'weekly_review' ? routes.weekReview() : r.kind === 'monthly_review' ? routes.monthReview() : r.kind === 'planning' ? routes.week() : routes.today
-        due.push({ id: `rem:${r.id}`, title: r.title, body: 'Reminder', to })
-      }
-      for (const d of due) {
-        if (alreadyFired(d.id)) continue
-        toast(<span><b>{d.title}</b> — {d.body}</span>, { action: { label: 'Open', onClick: () => navigate(d.to) }, ms: 8000 })
-        if (w.settings.notifications && 'Notification' in window && Notification.permission === 'granted') {
-          try {
-            const n = new Notification(d.title, { body: d.body, icon: '/favicon.svg', tag: d.id })
-            n.onclick = () => { window.focus(); navigate(d.to) }
-          } catch { /* some browsers only allow notifications from a service worker */ }
+      if (!w.settings.onboarded) return
+      // With push on for this signed-in device, the server sends these — don't double up.
+      const serverHandles = Boolean(userRef.current) && pushOnThisDevice()
+      const items: Array<{ key: string; title: string; body: string; url: string; label: string }> = []
+      if (!serverHandles) {
+        const today = todayKey()
+        const sentToday = firedCount(today)
+        for (const n of due(snapshotFromWorkspace(w), new Set(firedKeys(today)), sentToday, 3)) {
+          const open = n.actions.find(a => a.url)
+          items.push({ key: n.key, title: n.title, body: n.body, url: open?.url || n.url, label: open ? open.title.replace(/^\W+\s*/u, '') : 'Open' })
         }
+      }
+      // Custom reminders from Settings always fire in the app.
+      const now = minToClock(nowMin())
+      const today = todayKey()
+      for (const r of w.reminders) {
+        if (r.kind !== 'custom' || !r.enabled || r.time !== now || !r.days.includes(weekday(today))) continue
+        items.push({ key: `${today}:custom:${r.id}`, title: `🔔 ${r.title}`, body: 'Your reminder', url: routes.today, label: 'Open' })
+      }
+      for (const it of items) {
+        if (alreadyFired(it.key)) continue
+        toast(<span><b>{it.title}</b> — {it.body}</span>, { action: { label: it.label, onClick: () => navigate(it.url) }, ms: 9000 })
+        if (document.hidden) void showLocalNotification(it.title, it.body, it.url)
       }
     }
     check()
     const id = window.setInterval(check, 20_000)
     return () => window.clearInterval(id)
   }, [toast, navigate])
+}
+
+/** Buttons on notifications open links like /timer?do=start5 — run them, then tidy the URL. */
+export function useNotificationActions() {
+  const { ws, startTimer, refresh } = useStore()
+  const toast = useToast()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const handled = useRef('')
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    const action = params.get('do')
+    if (!action || handled.current === location.search) return
+    handled.current = location.search
+    params.delete('do'); params.delete('id'); params.delete('mini')
+    const clean = location.pathname + (params.toString() ? `?${params}` : '')
+    if (ws.settings.active_timer) toast('A timer is already running — keep going!')
+    else if (action === 'start5') { startTimer({ label: 'Just 5 minutes', goal_seconds: 300 }); toast('▶ Five minutes. That’s all — then decide.', { tone: 'celebrate' }) }
+    else if (action === 'start-block') {
+      const blockId = new URLSearchParams(location.search).get('id')
+      const mini = new URLSearchParams(location.search).get('mini') === '1'
+      if (blockId && ws.blocks.some(b => b.id === blockId)) { startTimer({ block_id: blockId, goal_seconds: mini ? 300 : null }); toast(mini ? '▶ Just 5 minutes on your planned block.' : '▶ Timer started for your planned block.', { tone: 'celebrate' }) }
+      else { startTimer({ label: 'Just 5 minutes', goal_seconds: 300 }); toast('▶ Timer started.') }
+    }
+    navigate(clean, { replace: true })
+  }, [location.search, location.pathname, ws.settings.active_timer, ws.blocks, startTimer, toast, navigate])
+
+  // A "✓ Done" pressed on a notification updates the server; pull it in.
+  useEffect(() => {
+    if (!('serviceWorker' in navigator)) return
+    const onMessage = (e: MessageEvent) => { if (e.data?.type === 'nudge-refresh') void refresh() }
+    navigator.serviceWorker.addEventListener('message', onMessage)
+    return () => navigator.serviceWorker.removeEventListener('message', onMessage)
+  }, [refresh])
+}
+
+// ---------------------------------------------------------------------------
+// Clear feedback whenever a timer starts, wherever it was started from.
+// "Just 5 min" takes you to the Timer screen (big clock, nothing else to look at);
+// other starts away from Today/Timer get a toast with "Open timer". The floating
+// dock also pulses so the eye finds it.
+
+export function useTimerStartFeedback() {
+  const { ws } = useStore()
+  const toast = useToast()
+  const navigate = useNavigate()
+  const { pathname } = useLocation()
+  const t = ws.settings.active_timer
+  const startedAt = t?.started_at ?? null
+  const seen = useRef<string | null>(startedAt)
+  useEffect(() => {
+    if (!startedAt || startedAt === seen.current) { seen.current = startedAt; return }
+    seen.current = startedAt
+    // Only react to timers started just now on this device (not ones loaded from sync).
+    if (Date.now() - new Date(startedAt).getTime() > 10_000) return
+    const dock = document.querySelector<HTMLElement>('.timer-dock')
+    if (dock) { dock.classList.remove('is-new'); void dock.offsetWidth; dock.classList.add('is-new') } // restart the pulse
+    const onFocusScreen = pathname === routes.timer || pathname === routes.today
+    if (onFocusScreen) return
+    if (t?.goal_seconds) {
+      navigate(routes.timer)
+      toast('▶ Five minutes — that’s all. When they’re up, keep going or stop.', { tone: 'celebrate' })
+    } else {
+      toast(<span>▶ Timer running{t?.label ? <> — <b>{t.label}</b></> : ''}</span>, { action: { label: 'Open timer', onClick: () => navigate(routes.timer) }, ms: 6000 })
+    }
+  }, [startedAt, pathname, t?.goal_seconds, t?.label, navigate, toast])
 }
 
 // ---------------------------------------------------------------------------

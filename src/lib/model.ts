@@ -5,6 +5,8 @@
 // Week, month and year totals are always derived from those rows — nothing is
 // stored twice.
 
+import type { NotifyPrefs } from '../../supabase/functions/push/planner.ts'
+
 export type DateKey = string // yyyy-MM-dd in the user's local time
 
 export type Category = {
@@ -219,6 +221,7 @@ export type Settings = {
   milestones_seen: Record<string, number> // streak key -> best value celebrated
   checklist_dismissed: boolean // hides the Getting started card on Today
   dashboard: DashboardLayout | null // null = default arrangement
+  notify: Partial<NotifyPrefs> | null // notification preferences (null = defaults); read by the push server
 }
 
 export type Workspace = {
@@ -271,6 +274,7 @@ export const DEFAULT_SETTINGS: Settings = {
   milestones_seen: {},
   checklist_dismissed: false,
   dashboard: null,
+  notify: null,
 }
 
 export const DEFAULT_REMINDERS: Reminder[] = [

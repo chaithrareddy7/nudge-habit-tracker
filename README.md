@@ -68,7 +68,9 @@ That's all you need to use the app on one computer. Your data is saved in the br
 | **recharts** | Charts (bar, line, area, donut) | Analytics, Insights, Week/Month planners, Goal and Habit detail, Timer, Journal |
 | **framer-motion** | Animations | Page transitions, modals, toasts and the floating timer (`src/ui/kit.tsx`, `src/shell/AppShell.tsx`) |
 | **lucide-react** | Icon set | Every icon in the UI |
-| **vite-plugin-pwa** | Makes the app installable ("Add to Home Screen") and able to load offline | Configured in `vite.config.ts`; generates `sw.js` and `manifest.webmanifest` at build time |
+| **vite-plugin-pwa** + **Workbox** | Makes the app installable ("Add to Home Screen"), able to load offline, and able to receive push notifications | `vite.config.ts` builds the custom service worker `src/sw.ts` (offline cache + push + notification buttons) and `manifest.webmanifest` |
+| **@dnd-kit** | Accessible drag and drop (mouse, touch, keyboard) | Customizing the Today dashboard (`src/screens/today-board.tsx`) |
+| **web-push** (server) | Encrypts and sends Web Push notifications with VAPID keys | The `push` Supabase Edge Function (`supabase/functions/push`) |
 
 ### Developer tools
 
@@ -105,6 +107,9 @@ nudge-habit-tracker/
 ├── .env.example               # Template for the Supabase environment variables
 ├── public/                    # Copied as-is into the build (favicon, icons)
 ├── supabase/migrations/       # SQL that creates the database tables (see section 8)
+├── supabase/functions/push/   # Edge Function that sends push notifications + the shared notification planner
+├── supabase/push-cron.sql     # Schedules the push function every 5 minutes (fill in, run once)
+├── supabase/config.toml       # Edge Function settings (push: JWT check off — it verifies requests itself)
 └── src/
     ├── main.tsx               # Entry point: renders <App/>
     ├── App.tsx                # Providers, theme, onboarding gate, all routes (screens lazy-loaded)
@@ -126,7 +131,7 @@ nudge-habit-tracker/
     │   ├── PlannerTabs.tsx    # Day / Week / Month / Calendar switcher; /plan remembers the last view
     │   ├── ErrorBoundary.tsx  # A crashing screen shows a recovery card instead of a blank page
     │   ├── editors.tsx        # Shared create/edit forms (task, habit, goal, event, block, session, note, timer, categories)
-    │   ├── background.tsx     # Reminders checker + streak celebrations
+    │   ├── background.tsx     # In-app reminders (shared planner), notification button links, 5-minute nudge, streak celebrations
     │   └── Onboarding.tsx     # First-run setup
     │
     ├── ui/                    # ── Reusable building blocks ──
@@ -270,13 +275,14 @@ Days, weeks, months and years are **not** tables. They're calculated from the `d
 - **Timer shortcut**: **T** opens the timer.
 - **Floating live timer**: shows on every page except Today and Timer.
 - **Mobile tab bar**: Today → Timer → Planner → Habits → More.
+- **Notifications** (Settings → Notifications): push nudges even when Nudge is closed — morning kickoff, planned blocks, "haven't started yet", habits with **✓ Done**, streak protection, reflection and reviews — with nudge styles, quiet hours and a daily cap. Setup: section 8.5.
 - **Guide** (`/guide`): the in-app user manual, covering every feature, why to use it and how, plus a suggested routine, shortcuts and FAQ.
 - **Getting started** card on Today for new accounts: set a goal → add a habit → plan a block → track time → check off a habit → reflect. It hides itself when done or dismissed.
 
 | Screen | URL | What you can do |
 | --- | --- | --- |
-| **Today** | `/today` | Greeting and date, main focus, productive time vs target (ring), start/pause/stop the timer, today's schedule with a "now" line, tasks, habits, active goals, streaks, upcoming events, quick mood check-in, and a summary of the day's numbers |
-| **Focus timer** | `/timer` | "What are you working on?" (category → goal → part → label → start). Shows the planned block happening now. Big live clock, pause/resume/stop, today's sessions and history, edit any session, **log time manually** |
+| **Today** | `/today` | Greeting and date, main focus, productive time vs target (ring), start/pause/stop the timer or **Just 5 min**, today's schedule with a "now" line, tasks, habits, active goals, streaks, upcoming events, quick mood check-in, and a summary of the day's numbers. **Customize** lets you drag cards (mouse, touch or arrow keys), hide/restore them and reset; the layout syncs |
+| **Focus timer** | `/timer` | "What are you working on?" (category → goal → part → label → start), plus **Stuck? Just 5 minutes** (a kind check-in at 5:00: keep going or stop). Shows the planned block happening now. Big live clock, pause/resume/stop, today's sessions and history, edit any session, **log time manually** |
 | **Planner** | `/plan` | One sidebar entry with four views (tabs at the top): Day, Week, Month, Calendar. `/plan` opens the view you used last |
 | **Day planner** | `/plan/day?date=…` | Hour-by-hour timeline: **drag** to move, **drag the bottom edge** to resize, **drag on empty space** to create. Planned and tracked time side by side. Per-day target and focus, tasks plus backlog, habits, events, notes, plan vs reality, the daily reflection form |
 | **Week planner** | `/plan/week?date=…` | Monday–Sunday columns: hours vs target, editable daily targets, blocks, events, tasks and habits per day. **Drag tasks and blocks between days** (or use the "Move to…" menu). Weekly target, weekly goals, plan vs reality, **Weekly review**, and **Plan next week** (carry over unfinished tasks, copy focus blocks, set next week's target and focus) |
@@ -286,10 +292,10 @@ Days, weeks, months and years are **not** tables. They're calculated from the `d
 | **Habits** | `/habits`, `/habits/:id` | Today's check-in, cards with a 12-week heatmap (click a cell to toggle that day). Detail page: current and best streak, 7/30/90-day completion rates, month calendar history, weekly and monthly performance charts |
 | **Tasks** | `/tasks` | Today / Upcoming / Backlog / Overdue / Completed. Search and filters, quick reschedule, start a timer on a task, "Move overdue to today" |
 | **Journal** | `/journal?date=…` | Mood, energy, guided prompts, gratitude, photos (resized to 1024 px, up to 8 per day), autosave. Shows what actually happened that day, a mood/energy trend, and searchable history |
-| **Analytics** | `/analytics?tab=today\|week\|month\|all` | Stats and charts per period: hours by day and category, planned vs actual, best day and time of day, a weekday × hour heatmap, monthly and weekly trends. Every chart has a "View as table" option |
+| **Analytics** | `/analytics?tab=progress\|today\|week\|month\|all` | **Progress** (default): this week vs the same days last week, a GitHub-style show-up calendar covering the last year, 8-week trends, when you start and how often planned blocks start on time, goal progress. Other tabs — stats and charts per period: hours by day and category, planned vs actual, best day and time of day, a weekday × hour heatmap, monthly and weekly trends. Every chart has a "View as table" option |
 | **Insights** | `/insights` | Plain-language insights, "What to focus on next", streaks with milestone progress, comparisons (week, month, year vs the previous one), planning accuracy |
 | **Search** | `/search?q=…` | Searches everything. Category or goal names ("coding") show a time summary. Dates and periods ("September", "last week", "2026-09-28", "sep 28") show that period's stats |
-| **Settings** | `/settings` | Name, account, theme (light / dark / system), timeline hours, targets, categories, reminders, browser notifications, export JSON, **import backup**, load sample data, start fresh, re-run setup |
+| **Settings** | `/settings` | Name, account, theme (light / dark / system), timeline hours, targets, categories, **Notifications** (turn on for this device, nudge style, what to send, quiet hours, live preview, test), your own reminders, export JSON, **import backup**, load sample data, start fresh, re-run setup |
 | **Guide** | `/guide` | Searchable user manual for every feature |
 
 ---
@@ -311,7 +317,7 @@ All of these live in `src/lib/selectors.ts`.
 | **Plan vs reality** | Planned = total length of **focus** blocks; Actual = tracked sessions; **Efficiency = actual ÷ planned**. Shown per category with over/under amounts. "Followed through" = share of planned blocks that got at least half their length in linked sessions. |
 | **Auto-linking** | Starting the timer during a planned focus block links the session to that block when the category or goal matches, so plan vs reality works without extra steps. |
 | **Celebrations** | A subtle toast at streak milestones (3, 7, 14, 21, 30, 50, 75, 100, 150, 200, 365) and once when you beat your personal best. |
-| **Reminders** | Checked every 20 seconds while the app is open: habits and tasks at their time, time blocks at their start, events 10 minutes before, and journal / planning / weekly / monthly review prompts (the monthly one on the last day of the month). Shown in-app, plus a browser notification if you allow it in Settings. |
+| **Notifications** | One planner (`supabase/functions/push/planner.ts`) decides what's due: morning kickoff, planned block start (+ a follow-up 10 min later if it didn't start, Balanced/Coach), "haven't started yet" nudges (Gentle 15:00 · Balanced 11:30 & 15:30 · Coach 10:30, 13:30 & 16:30) if nothing is tracked, habit and task reminders at their time (skipped once done), events 10 min before, streak protection in the evening if today is short of your minimum, evening reflection if you haven't journaled, weekly review on your chosen day, monthly review on the last day. Quiet hours suppress everything; a daily cap (4 / 8 / 14) drops nudges before reminders you set. Each item is sent at most once a day. With push on, the server sends them even when the app is closed; otherwise the same rules run in the app every 20 s. |
 
 ---
 
@@ -366,6 +372,7 @@ npx supabase db push
 | `20260929000000_productivity_os.sql` | Tables from an earlier version of the app | No |
 | `20260930000000_goal_ownership_guards.sql` | Triggers for those earlier tables | No |
 | `20261001000000_nudge_productivity_os.sql` | **The 13 `nudge_*` tables**, `profiles.settings`, indexes and security policies | **Yes** |
+| `20261012000000_nudge_push.sql` | Push notifications: device subscriptions (per user, RLS), send log and snooze queue (server only) | **Yes**, for push |
 
 **What the migration guarantees:**
 
@@ -389,6 +396,55 @@ In **Authentication → URL Configuration**, add every address the app runs on:
 | Redirect URLs | `http://localhost:5173/**`, `https://nudge-habit-tracker.vercel.app/**`, and (for Vercel preview deployments) `https://*-<your-vercel-team>.vercel.app/**` |
 
 The app asks Supabase to send users back to `<current site>/today` after sign-in. If that address isn't in the list, Supabase sends them to the Site URL instead.
+
+---
+
+### 8.5 Push notifications (optional, recommended)
+
+What people get, even when Nudge is closed: a morning kickoff with their main focus, a nudge when a planned block starts (and a gentle follow-up if it doesn't), "haven't started yet" check-ins, habit and task reminders with **✓ Done** buttons that work right from the notification, streak protection in the evening, a reflection prompt and weekly/monthly review reminders. Each person picks a **nudge style** (Gentle / Balanced / Coach), what to receive, and quiet hours in **Settings → Notifications**.
+
+**How it works**
+
+```mermaid
+sequenceDiagram
+  participant Cron as pg_cron (every 5 min)
+  participant Fn as Edge Function "push"
+  participant DB as Postgres (nudge_* tables)
+  participant Push as Browser push service
+  participant SW as Service worker (src/sw.ts)
+  Cron->>Fn: POST {action:"tick"} + x-push-secret
+  Fn->>DB: subscriptions, today's habits/tasks/blocks/sessions, settings.notify
+  Fn->>Fn: planner.ts → what's due now (local time, quiet hours, cap, not sent yet)
+  Fn->>DB: log key (never send twice)
+  Fn->>Push: encrypted Web Push (VAPID)
+  Push->>SW: push event → showNotification (+ buttons)
+  SW->>Fn: "✓ Done" / "⏰ In 15 min" with a signed token
+  Fn->>DB: mark habit/task done · queue the snooze
+```
+
+**One-time setup** (about 10 minutes):
+
+1. **Keys.** Generate them once (already done for this repo — see the git-ignored `.env.push`):
+   ```bash
+   npx web-push generate-vapid-keys      # public + private key
+   node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"   # PUSH_SECRET
+   ```
+   Never commit the private key or `PUSH_SECRET`.
+2. **Database.** Run `supabase/migrations/20261012000000_nudge_push.sql` in the SQL Editor (or `npx supabase db push`).
+3. **Extensions.** Supabase → **Database → Extensions**: enable **pg_cron** and **pg_net**.
+4. **Deploy the function** (from the repo root):
+   ```bash
+   npx supabase login
+   npx supabase link --project-ref <project-ref>
+   npx supabase functions deploy push --no-verify-jwt
+   ```
+   (Or Dashboard → **Edge Functions → Deploy a new function → Via editor**, name it `push`, add the three files from `supabase/functions/push/` — `index.ts`, `planner.ts`, `messages.ts` — and turn **Enforce JWT verification** off.)
+5. **Function secrets.** Dashboard → **Edge Functions → Secrets** (or `npx supabase secrets set …`): `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `PUSH_SECRET`, and optionally `VAPID_SUBJECT=mailto:you@example.com`.
+6. **Schedule it.** Open `supabase/push-cron.sql`, replace `<PROJECT_REF>` and `<PUSH_SECRET>`, and run it in the SQL Editor (don't commit the filled-in copy).
+7. **Frontend key.** Add `VITE_VAPID_PUBLIC_KEY` (the public key) to Vercel → Environment Variables and to your local `.env`, then **redeploy**.
+8. **Try it.** On the live site: sign in → **Settings → Notifications → Turn on notifications** → **Send test**.
+
+Check the scheduler with `select status, return_message, start_time from cron.job_run_details order by start_time desc limit 5;`. The function's logs are under **Edge Functions → push → Logs**.
 
 ---
 
@@ -432,6 +488,7 @@ Before `git add -A`, check `git status`. The `.archify/` folder contains locally
    | --- | --- |
    | `VITE_SUPABASE_URL` | `https://<project-ref>.supabase.co` |
    | `VITE_SUPABASE_ANON_KEY` | your anon / publishable key |
+   | `VITE_VAPID_PUBLIC_KEY` | *(optional, for push)* the public key from `.env.push` — see section 8.5 |
 
 7. Click **Deploy**. The build takes about a minute, and you'll get a URL like `https://nudge-habit-tracker.vercel.app`.
 
@@ -480,6 +537,7 @@ vercel --prod                      # build and deploy to production
 | `npm run dev` | Development server with instant reload (default `http://localhost:5173`; use `npm run dev -- --host` to open it on your phone over Wi-Fi) |
 | `npm run build` | Type-checks everything (`tsc -b`), then builds the production files into `dist/` |
 | `npm run preview` | Serves the `dist/` build locally, the closest thing to production |
+| `npm run test:notify` | Runs the 26 notification-planner tests (timing, quiet hours, caps, no duplicates) |
 | `npm run lint` | Runs oxlint. The remaining warnings are "fast refresh" notices about files that export hooks alongside components; they're harmless |
 
 Run `npm run build` and `npm run lint` before pushing. Vercel runs the same build, so if it fails locally it will fail there too.
@@ -521,6 +579,10 @@ Run `npm run build` and `npm run lint` before pushing. Vercel runs the same buil
 | An old version keeps showing after a deploy | The service worker cached the previous build | Reload once more (it updates in the background), or close and reopen the tab |
 | Build fails with a Node error | Node too old | Use Node 20.19+ / 22.12+ locally and on Vercel |
 | A screen shows "Something went wrong on this screen" | A bug in that screen; your data is unaffected | Press **Try again** or **Reload app**, and report the message shown |
+| "Push isn't set up on this deployment yet" in Settings | `VITE_VAPID_PUBLIC_KEY` missing from the build | Add it (Vercel env + local `.env`) and redeploy — section 8.5 |
+| "Send test" says the server isn't reachable | `push` function not deployed, or secrets missing | Deploy the function and set `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `PUSH_SECRET` (8.5) |
+| Test works but scheduled nudges never arrive | Cron job not scheduled, or `PUSH_SECRET` in `push-cron.sql` doesn't match the function secret | Run `select status, return_message from cron.job_run_details order by start_time desc limit 5;` — 401 means the secret differs |
+| No notifications on iPhone | iOS only allows push for Home Screen apps | Safari → Share → **Add to Home Screen**, open Nudge from there, then turn notifications on |
 | Signed in on a new device and the data looks different | By design, an account that already has data replaces this device's copy | Use Settings → **Export JSON** before signing in if you want a backup |
 | "This device is out of storage space" | Many journal photos in browser storage | Remove some photos; browser storage is roughly 5 MB per site |
 
@@ -528,7 +590,8 @@ Run `npm run build` and `npm run lint` before pushing. Vercel runs the same buil
 
 ## 13. Known limitations
 
-- **Reminders only fire while the app is open** (in a tab or as an installed app). Notifications while it's closed would need Web Push (VAPID keys) and a server-side sender, which aren't included.
+- **Push needs an account and a supported browser.** Notifications while Nudge is closed require being signed in, the push setup in section 8.5, and Chrome/Edge/Firefox (desktop or Android) or, on iPhone/iPad, iOS 16.4+ with Nudge added to the Home Screen. Without it, reminders still appear while the app is open.
+- **Timing granularity:** the push scheduler runs every 5 minutes, so a notification can arrive up to ~5 minutes after its time.
 - **Sync conflicts:** the last write wins per row. Editing the same item on two devices at the same moment keeps whichever save arrives last.
 - **Photos** are stored inside the journal row (and therefore in browser storage). For heavy photo use, move them to Supabase Storage.
 - **Drag and drop** on the week board uses the browser's native drag events, which phones don't support; on phones, use each item's "Move to…" menu instead.

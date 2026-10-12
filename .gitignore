@@ -28,3 +28,6 @@ dist-ssr
 
 # Generated diagrams (Archify)
 .archify/
+
+# vite-plugin-pwa dev service worker output
+dev-dist

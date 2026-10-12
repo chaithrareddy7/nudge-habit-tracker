@@ -1,34 +1,23 @@
 import { useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Bell, Database, LogIn, LogOut, Palette, Shapes, Target, UserRound } from 'lucide-react'
+import { Database, LogIn, LogOut, Palette, Shapes, Target, UserRound } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { todayKey } from '../lib/dates'
 import { useStore } from '../lib/store'
-import type { Reminder } from '../lib/model'
 import { Button, Card, ConfirmButton, Dot, Field, Page, Segmented, useToast } from '../ui/kit'
 import { useEditors } from '../shell/editors'
+import { disablePush } from '../lib/push'
+import { NotificationsPanel } from './settings-notifications'
 import './settings.css'
 
-const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const hours = (min: number) => Math.round((min / 60) * 100) / 100
 
 export default function Settings() {
-  const { ws, user, updateSettings, update, create, remove, loadSample, importWorkspace, resetWorkspace, sync } = useStore()
+  const { ws, user, updateSettings, loadSample, importWorkspace, resetWorkspace, sync } = useStore()
   const { open } = useEditors()
   const toast = useToast()
   const navigate = useNavigate()
   const s = ws.settings
-  const [permission, setPermission] = useState(() => ('Notification' in window ? Notification.permission : 'unsupported'))
-
-  const enableNotifications = async (on: boolean) => {
-    if (!on) { updateSettings({ notifications: false }); return }
-    if (!('Notification' in window)) { toast('This browser doesn’t support notifications — reminders will show in the app.'); return }
-    const result = await Notification.requestPermission()
-    setPermission(result)
-    updateSettings({ notifications: result === 'granted' })
-    if (result !== 'granted') toast('Notifications are blocked — reminders will still appear inside the app.')
-  }
-
   const exportData = () => {
     const blob = new Blob([JSON.stringify(ws, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
@@ -56,10 +45,9 @@ export default function Settings() {
     setPendingImport(null)
   }
 
-  const setReminder = (r: Reminder, patch: Partial<Reminder>) => update('reminders', r.id, patch)
 
   return (
-    <Page eyebrow="Settings" title="Make it yours" subtitle="Targets, reminders, appearance and your account.">
+    <Page eyebrow="Settings" title="Make it yours" subtitle="Targets, notifications, appearance and your account.">
       <div className="settings-grid">
         <Card title={<span className="row"><UserRound size={16} /> Account</span>}>
           <div className="stack-lg">
@@ -67,7 +55,7 @@ export default function Settings() {
             {user ? (
               <div className="row-between wrap">
                 <div><b>{user.email}</b><div className="muted" style={{ fontSize: 12 }}>{sync === 'error' ? 'Sync paused — changes are kept on this device' : 'Synced across your devices'}</div></div>
-                <Button icon={<LogOut size={15} />} onClick={async () => { await supabase?.auth.signOut(); navigate('/login') }}>Sign out</Button>
+                <Button icon={<LogOut size={15} />} onClick={async () => { await disablePush().catch(() => {}); await supabase?.auth.signOut(); navigate('/login') }}>Sign out</Button>
               </div>
             ) : (
               <div className="row-between wrap">
@@ -99,26 +87,7 @@ export default function Settings() {
           <div className="row wrap">{ws.categories.map(c => <span className="chip" key={c.id}><Dot color={c.color} />{c.name}</span>)}</div>
         </Card>
 
-        <Card className="span-2" title={<span className="row"><Bell size={16} /> Reminders</span>} sub="Habit, task, time-block and event reminders are set on each item. These are your routine prompts.">
-          <label className="check" style={{ marginBottom: 12 }}>
-            <input type="checkbox" checked={s.notifications} onChange={e => void enableNotifications(e.target.checked)} />
-            Browser notifications {permission === 'denied' && <span className="chip warn">blocked in browser settings</span>}
-          </label>
-          <div className="list">
-            {ws.reminders.map(r => (
-              <div className="list-row reminder-row" key={r.id}>
-                <input type="checkbox" checked={r.enabled} onChange={e => setReminder(r, { enabled: e.target.checked })} aria-label={`Enable ${r.title}`} style={{ accentColor: 'var(--accent)' }} />
-                <input className="input reminder-title" value={r.title} onChange={e => setReminder(r, { title: e.target.value })} aria-label="Reminder title" disabled={r.kind !== 'custom'} />
-                <input className="input reminder-time" type="time" value={r.time} onChange={e => e.target.value && setReminder(r, { time: e.target.value })} aria-label="Time" />
-                {r.kind === 'monthly_review'
-                  ? <span className="muted reminder-days">Last day of the month</span>
-                  : <div className="reminder-days row wrap">{DAYS.map((d, i) => <button key={d} className="chip chip-choice" aria-pressed={r.days.includes(i)} onClick={() => setReminder(r, { days: r.days.includes(i) ? r.days.filter(x => x !== i) : [...r.days, i] })}>{d[0]}</button>)}</div>}
-                {r.kind === 'custom' && <ConfirmButton onConfirm={() => remove('reminders', r.id)} confirmLabel="Delete">Remove</ConfirmButton>}
-              </div>
-            ))}
-          </div>
-          <Button size="sm" variant="ghost" style={{ marginTop: 8 }} onClick={() => create('reminders', { kind: 'custom', title: 'New reminder', time: '09:00', days: [1, 2, 3, 4, 5], enabled: true })}>+ Custom reminder</Button>
-        </Card>
+        <NotificationsPanel />
 
         <Card className="span-2" title={<span className="row"><Database size={16} /> Data</span>}>
           <div className="row wrap">
